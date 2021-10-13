@@ -1,6 +1,8 @@
 from os import walk
 from shutil import copyfile
+from subprocess import call
 
+#returns missing files in format of (dir,file)
 def missingFilesList(path1 = "\\\\fserver\\mounts\\New Volume\\Vids", path2 = "E:\\Video\\Vids"):
         
     print("Enter path 1: ")
@@ -11,37 +13,36 @@ def missingFilesList(path1 = "\\\\fserver\\mounts\\New Volume\\Vids", path2 = "E
     #path2 = "E:\\Video\\Vids"
     print(path2)
 
-
     f1 = []
     for(dirpath, dirnames, filenames) in walk(path1):
-        f1.extend(filenames)
+        for name in filenames:
+            f1.append((dirpath,name))
     f2 = []
     for(dirpath, dirnames, filenames) in walk(path2):
-        f2.extend(filenames)
+        for name in filenames:
+            f2.append((dirpath,name))
 
     missingFiles = []
 
-    for n1 in f1:
+    for (dirPath1, fileName1) in f1:
         found = False
-        for n2 in f2:
-            if n1 == n2:
+        for (dirPath2, fileName2) in f2:
+            if fileName1 == fileName2:
                 found = True
         if found == False:
-            file = (path1 + n1)
-            missingFiles.append(file)
+            missingFiles.append((dirPath1,fileName1))
+
     return missingFiles
 """     files = "\""
     files = files + "\", \"".join(missingFiles)
     files = files + "\""
     print(files) """
 
-    
+def copyToMissing(files, dest):
+    for (dir, fileName) in files:
+        call(["robocopy", dir, dest, fileName, "/sec"])
 
-
-def copyFiles(files, source, dest):
-    for f in files:
-        copyfile(source+f,dest+f )
-
-copyFiles(missingFilesList,"\\\\fserver\\mounts\\New Volume\\Vids\\", "E:\\Video\\Vids\\missingFiles\\")
+copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
+#copyFiles(missingFilesList(),"\\\\fserver\\mounts\\New Volume\\Vids\\", "E:\\Video\\Vids\\missingFiles\\")
     #\\fserver\mounts\New Volume\Vids
     #E:\Video\Vids
