@@ -40,7 +40,7 @@ def missingFilesList(path1 = "\\\\fserver\\mounts\\New Volume\\Vids", path2 = "E
 
 def copyToMissing(files, dest):
     for (dir, fileName) in files:
-        call(["robocopy", dir, dest, fileName, "/sec"])
+        call(["robocopy", dir, dest, fileName])
 
 copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
 #copyFiles(missingFilesList(),"\\\\fserver\\mounts\\New Volume\\Vids\\", "E:\\Video\\Vids\\missingFiles\\")
