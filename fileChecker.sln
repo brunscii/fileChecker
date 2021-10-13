@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "fileChecker", "fileChecker.pyproj", "{D71D4E51-3FB1-4588-B6ED-34F7B252F226}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D71D4E51-3FB1-4588-B6ED-34F7B252F226}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D71D4E51-3FB1-4588-B6ED-34F7B252F226}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB79A534-3E21-47FF-8FE7-C0F41923AE9E}
+	EndGlobalSection
+EndGlobal
