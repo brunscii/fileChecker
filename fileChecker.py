@@ -1,16 +1,44 @@
+'''Author: Chris Carlin
+
+To do: 
+> add a MD5/SHA-1 hash checker to see if the copied files are the same file or to see if the files are the same before coppying
+> add persistence through a temp file that shows the files being copied and that has been copied in case of unexpected shutdowns
+> show the persistence file that will show any possibly uncoipied files and ask if you want to proceed on run...possibly a status run
+> add multi threading to copy multiple files at a time
+> add a user interface that shows the file changes in a git type of way
+> add some kind of a service based automation to perform scheduled backups
+> display the list of files that are going to be copied and ask permissions, maybe do a -y type of system
+> add the ability to copy files in linux or windows by choosing the copy method
+> add a option switch that will allow future expandability
+    -y yes copy all of the files on ask pronpt
+    -r replace the files that are in the destination with the current files from source
+    -b backup the source to the destination by creating a copy folder that will be named <source-date>
+    -1 do a SHA-1 checksum to determine if the files in the source are the same as in the destination
+    -5 do a MD5 checksum to detiermine if the files in the source are the same as in the destination
+    -256 do a SHA-256 checksum to determine if the files in the source are the same as in the destination
+    -t time stamp everthing in the destination to show that it is up to date --touch
+    -ext only copy files of a certain extention type
+    -log log status messages into a log file with name <source-dest-date>
+    -robo use robocopy
+    -cp us cp
+    
+
+'''
+
 from os import walk
 from shutil import copyfile
 from subprocess import call
+import sys
+
+
 
 #returns missing files in format of (dir,file)
 def missingFilesList(path1 = "\\\\fserver\\mounts\\New Volume\\Vids", path2 = "E:\\Video\\Vids"):
         
     print("Enter path 1: ")
-    #path1 = "\\\\fserver\\mounts\\New Volume\\Vids"
     print(path1)
 
     print("Enter path 2: ")
-    #path2 = "E:\\Video\\Vids"
     print(path2)
 
     f1 = []
@@ -33,16 +61,12 @@ def missingFilesList(path1 = "\\\\fserver\\mounts\\New Volume\\Vids", path2 = "E
             missingFiles.append((dirPath1,fileName1))
 
     return missingFiles
-"""     files = "\""
-    files = files + "\", \"".join(missingFiles)
-    files = files + "\""
-    print(files) """
 
 def copyToMissing(files, dest):
     for (dir, fileName) in files:
         call(["robocopy", dir, dest, fileName])
 
-copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
-#copyFiles(missingFilesList(),"\\\\fserver\\mounts\\New Volume\\Vids\\", "E:\\Video\\Vids\\missingFiles\\")
-    #\\fserver\mounts\New Volume\Vids
-    #E:\Video\Vids
+if len(sys.argv) > 3:
+        copyToMissing(missingFilesList(sys.argv[1],sys.argv[2]), sys.argv[3] )
+else:
+    copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
