@@ -26,47 +26,159 @@ To do:
 '''
 
 from os import walk
+from os.path import exists
 from shutil import copyfile
 from subprocess import call
 import sys
+import time
+import hashlib
+
+#valid arguments that the program can take
+VALID_ARGUMENTS = ("y","r","b","1","5","256","t","ext","log","robo","cp")
+#flags for the arguments to set or unset
+copyAll = False
+replaceAll = False
+backup = False
+sha_1 = False
+md5 = False
+sha_256 = False
+timeStamp = False
+extentionFilter = False
+log = False
+robo = True
+cp = False
 
 
-
+#checks path1 against path2 for missing files in path2 that exist in path1
 #returns missing files in format of (dir,file)
-def missingFilesList(path1 = "\\\\fserver\\mounts\\New Volume\\Vids", path2 = "E:\\Video\\Vids"):
-        
-    print("Enter path 1: ")
-    print(path1)
-
-    print("Enter path 2: ")
-    print(path2)
-
-    f1 = []
-    for(dirpath, dirnames, filenames) in walk(path1):
-        for name in filenames:
-            f1.append((dirpath,name))
-    f2 = []
-    for(dirpath, dirnames, filenames) in walk(path2):
-        for name in filenames:
-            f2.append((dirpath,name))
-
+def missingFilesList(path1, path2):
     missingFiles = []
+    if exists(path1) and exists(path2) :
+        print(path1)
 
-    for (dirPath1, fileName1) in f1:
-        found = False
-        for (dirPath2, fileName2) in f2:
-            if fileName1 == fileName2:
-                found = True
-        if found == False:
-            missingFiles.append((dirPath1,fileName1))
+        print(path2)
+
+        f1 = []
+        for(dirpath, dirnames, filenames) in walk(path1):
+            for name in filenames:
+                f1.append((dirpath,name))
+        f2 = []
+        for(dirpath, dirnames, filenames) in walk(path2):
+            for name in filenames:
+                f2.append((dirpath,name))
+
+        
+
+        for (dirPath1, fileName1) in f1:
+            found = False
+            for (dirPath2, fileName2) in f2:
+                if fileName1 == fileName2:
+                    found = True
+            if found == False:
+                missingFiles.append((dirPath1,fileName1))
 
     return missingFiles
 
+#This is a function to copy the missing files to the destination
 def copyToMissing(files, dest):
     for (dir, fileName) in files:
+        time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
+        
 
-if len(sys.argv) > 3:
-        copyToMissing(missingFilesList(sys.argv[1],sys.argv[2]), sys.argv[3] )
-else:
-    copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
+#check the arguments in argv to make sure they are valid and return a count
+def parseArg():
+    
+    source = ""
+    dest = ""
+    #check if there is enough arguments to assume the source and destination files to be checked later
+    if len(sys.argv) >= 3 :
+        source = sys.argv[1]
+        dest = sys.argv[2]
+    elif len(sys.argv) > 2:
+        source = sys.argv[1]
+        dest = fileChooser()
+    #check the source and destination folders for validity and choose new targets in case of issue
+    if exists(source):
+        print("Source: " + source)
+    else :
+        print("Invalid source path")
+        source =fileChooser()
+        time.sleep(2.9)
+    if exists(dest):
+        print("Destination: " + dest)
+    else :
+        print("Invalid destination path")
+        dest = fileChooser()
+        time.sleep(2.9)
+
+    #check the remaining arguments and set them if they are in the list of arguments to be accepted
+    for case in sys.argv:
+        if case in VALID_ARGUMENTS:
+            setArg(case)
+        
+def fileChooser():
+    while True :
+        f = input("Enter a filename: ")
+        if exists(f) :
+            if(input("Are you sure y/n: ").lower() == "y"):
+                return f
+    
+def setArg(argument):
+    if argument.lower() == "y" : 
+        copyAll = True
+        print("CopyAll")
+    if argument.lower() == "r" : 
+        replaceAll = True
+        print("ReplaceAll")
+    if argument.lower() == "b" : 
+        backup = True
+        print("Backup")
+        time.sleep(3.0)
+    if argument == "1" or argument == 1 :
+        sha_1 = True
+    if argument.lower() == "t" :
+        timeStamp = True
+    if argument.lower() == "5" or argument == 5 :
+        md5 = True
+    if argument.lower() == "256" or argument == 256 :
+        sha_256 = True
+    if argument.lower() == "ext" :
+        extentionFilter = True
+    if argument.lower() == "log" :
+        log = True
+    if argument.lower() == "robo" : 
+        robo = True
+    if argument.lower() == "cp" :
+        cp = True
+
+
+def sha_1(filename) :
+    sha1 = hashlib.sha1()
+    with open(filename,'rb') as f:
+        while True:
+            data = f.read(65536)
+            if not data :
+                break
+            sha1.update(data)
+    print("SHA1: {0}".format(sha1.hexdigest()))
+    time.sleep(5.0)
+    return sha1
+
+
+
+def main():
+
+    #return True
+    #check the arguments for switch cases 
+    #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
+    if parseArg() == False :
+        print("File checking works")
+        return False
+    #copyToMissing(missingFilesList(source, dest), dest)
+
+if __name__ == "__main__":
+    main()
+
+#else:
+    #copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
