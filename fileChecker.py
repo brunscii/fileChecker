@@ -47,7 +47,8 @@ extentionFilter = False
 log = False
 robo = True
 cp = False
-
+source = " \asdf"
+dest = "asdf"
 
 #checks path1 against path2 for missing files in path2 that exist in path1
 #returns missing files in format of (dir,file)
@@ -89,8 +90,9 @@ def copyToMissing(files, dest):
 #check the arguments in argv to make sure they are valid and return a count
 def parseArg():
     
-    source = ""
-    dest = ""
+    global source
+    global dest
+
     #check if there is enough arguments to assume the source and destination files to be checked later
     if len(sys.argv) >= 3 :
         source = sys.argv[1]
@@ -125,6 +127,18 @@ def fileChooser():
                 return f
     
 def setArg(argument):
+
+    global copyAll
+    global md5
+    global sha_1
+    global sha_256
+    global robo
+    global backup
+    global replaceAll
+    global timeStamp
+    global cp
+    global extentionFilter
+
     if argument.lower() == "y" : 
         copyAll = True
         print("CopyAll")
@@ -169,14 +183,17 @@ def sha_1(filename) :
 
 def main():
 
-    #return True
     #check the arguments for switch cases 
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
-    if parseArg() == False :
-        print("File checking works")
-        return False
+    parseArg()
+    print("File checking works")
+    if copyAll == True :
+        print("Copy All files....")
+        x = input("....")
+        
+    return True
     #copyToMissing(missingFilesList(source, dest), dest)
-
+    #add some form of flag checking to call appropriate flags
 if __name__ == "__main__":
     main()
 
