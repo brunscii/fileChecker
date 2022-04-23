@@ -106,13 +106,11 @@ def parseArg():
     else :
         print("Invalid source path")
         source =fileChooser()
-        time.sleep(2.9)
     if exists(dest):
         print("Destination: " + dest)
     else :
         print("Invalid destination path")
         dest = fileChooser()
-        time.sleep(2.9)
 
     #check the remaining arguments and set them if they are in the list of arguments to be accepted
     for case in sys.argv:
@@ -177,7 +175,20 @@ def sha_1(filename) :
             sha1.update(data)
     print("SHA1: {0}".format(sha1.hexdigest()))
     time.sleep(5.0)
-    return sha1
+    return sha1.hexdigest()
+
+def md5(filename) :
+    md5 = hashlib.md5()
+    with open(filename,'rb') as f:
+        while True:
+            data = f.read(65536)
+            if not data :
+                break
+            md5.update(data)
+    print("MD5: {0}".format(md5.hexdigest()))
+    time.sleep(5.0)
+    return md5
+
 
 
 
@@ -185,12 +196,16 @@ def main():
 
     #check the arguments for switch cases 
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
-    parseArg()
-    print("File checking works")
-    if copyAll == True :
-        print("Copy All files....")
-        x = input("....")
-        
+    if len(sys.argv) == 1 :
+        print("# | Option \n" +
+              "1.| MD1 hash of a file \n" +
+              "2.| SHA1 hash of a file \n" +
+              "3.| SHA256 hash of a file\n" +
+              "4.| backup to a folder and create new copies of the files in the destination folder \n" +
+              "5.| replace all files in a folder with those from a source")
+        choice = input("Enter a number: ")
+        if choice == "1" :
+            print(md5(fileChooser()))
     return True
     #copyToMissing(missingFilesList(source, dest), dest)
     #add some form of flag checking to call appropriate flags
