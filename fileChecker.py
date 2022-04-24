@@ -47,7 +47,7 @@ extentionFilter = False
 log = False
 robo = True
 cp = False
-source = " \asdf"
+source = "asdf"
 dest = "asdf"
 
 #checks path1 against path2 for missing files in path2 that exist in path1
@@ -68,8 +68,6 @@ def missingFilesList(path1, path2):
             for name in filenames:
                 f2.append((dirpath,name))
 
-        
-
         for (dirPath1, fileName1) in f1:
             found = False
             for (dirPath2, fileName2) in f2:
@@ -81,12 +79,11 @@ def missingFilesList(path1, path2):
     return missingFiles
 
 #This is a function to copy the missing files to the destination
-def copyToMissing(files, dest):
+def copyToMissingRobo(files, dest):
     for (dir, fileName) in files:
         time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
         
-
 #check the arguments in argv to make sure they are valid and return a count
 def parseArg():
     
@@ -164,7 +161,6 @@ def setArg(argument):
     if argument.lower() == "cp" :
         cp = True
 
-
 def sha_1(filename) :
     sha1 = hashlib.sha1()
     with open(filename,'rb') as f:
@@ -193,19 +189,49 @@ def md5(filename) :
 
 
 def main():
-
+    global source
+    global dest
     #check the arguments for switch cases 
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
     if len(sys.argv) == 1 :
         print("# | Option \n" +
+              "=====================\n" +
               "1.| MD1 hash of a file \n" +
               "2.| SHA1 hash of a file \n" +
               "3.| SHA256 hash of a file\n" +
               "4.| backup to a folder and create new copies of the files in the destination folder \n" +
               "5.| replace all files in a folder with those from a source")
+
         choice = input("Enter a number: ")
-        if choice == "1" :
-            print(md5(fileChooser()))
+        #add a loop that repeats and asks for input if not given a number between 1-5 and 0 to exit
+        #filter the input for the menu
+        while True :
+            if choice == "0" :
+                return False
+            if choice == "1" : #md5 option
+                print(md5(fileChooser()))
+                time.sleep(15)
+                return True
+            if choice == "2" : #sha1 option
+                print(sha_1(fileChooser()))
+                time.sleep(15)
+                return True
+            if choice == "3" : #sha256 option
+                print("Working on it")
+                time.sleep(5)
+                return True
+            if choice == "4" : #backup option
+                print("working on it")
+                time.sleep(5)
+                return True
+            if choice == "5" : #replace all option
+                print("This will replace all files in the destination.\nAre you sure this is what you want?")
+                if(input("Are You Sure?").lower()=="y"):
+                    #add the call to replace all files here
+                    return true
+                
+            #must not be a real option so grab input again
+            choice = input("Enter a number please: ")
     return True
     #copyToMissing(missingFilesList(source, dest), dest)
     #add some form of flag checking to call appropriate flags
