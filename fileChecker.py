@@ -32,6 +32,7 @@ from subprocess import call
 import sys
 import time
 import hashlib
+import datetime
 
 #valid arguments that the program can take
 VALID_ARGUMENTS = ("y","r","b","1","5","256","t","ext","log","robo","cp")
@@ -185,8 +186,41 @@ def md5(filename) :
     time.sleep(5.0)
     return md5
 
+def sha_256(filename) :
+    sha256 = hashlib.sha256()
+    with open(filename,'rb') as f:
+        while True:
+            data = f.read(65536)
+            if not data :
+                break
+            sha256.update(data)
+    print("SHA256: {0}".format(sha256.hexdigest()))
+    time.sleep(5.0)
+    return sha256.hexdigest()
 
+def backup(source, destination, name = ""):
+    if name == "" :
+        if input("Use {} as the default name for this backup?".format(str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop())).lower() == "y" :
+            name = str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop()
+        else:
+            while True :
+                name = input("Enter a backup name then: ")
+                if input("are you sure?").lower() == "y":
+                    break
+                
+    #create a archive file or a folder containing a copy of verything in the source
+    print(name)
 
+    copyToMissingRobo(fileList(source),destination + "\\" + name)
+
+    return True
+    
+def fileList(folderName):
+    files = []
+    for(dirpath, dirname, filenames) in walk(folderName) :
+        for f in filenames:
+            files.append((dirpath,f))
+    return files
 
 def main():
     global source
@@ -196,7 +230,7 @@ def main():
     if len(sys.argv) == 1 :
         print("# | Option \n" +
               "=====================\n" +
-              "1.| MD1 hash of a file \n" +
+              "1.| MD5 hash of a file \n" +
               "2.| SHA1 hash of a file \n" +
               "3.| SHA256 hash of a file\n" +
               "4.| backup to a folder and create new copies of the files in the destination folder \n" +
@@ -222,6 +256,7 @@ def main():
                 return True
             if choice == "4" : #backup option
                 print("working on it")
+                backup("C:\\Users\\meatw\\Desktop\\school\\PONG","C:\\Users\\meatw\\Desktop\\missingFiles", "buttSniffer")
                 time.sleep(5)
                 return True
             if choice == "5" : #replace all option
