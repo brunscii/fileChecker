@@ -1,0 +1,15 @@
+File checker features
+
+
+This is the list of what we need to add to the file checker to make it useful for the project
+
+	-Linux compliance
+	-Checking the hash value of a file quickly with either sha1 or sha256 to make sure it doesn't already exist
+	-Tack option to only list the files that are missing from the destination directory 
+	-Option to write the list to a file
+	-Option to read a list from a file to be copied
+	-Option to read log and start over on last file being copied in case of failure
+	-Option to do a quiet backup
+	-Option to copy the files over in the same folder structure that it has in the source folder
+	-Ability to show a tree of the current source and destination files and folders and output them in a similar format to tree command
+	-Ability to filter the files for a specific type of file and only copy those over

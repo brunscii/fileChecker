@@ -39,7 +39,7 @@ VALID_ARGUMENTS = ("y","r","b","1","5","256","t","ext","log","robo","cp")
 #flags for the arguments to set or unset
 copyAll = False
 replaceAll = False
-backup = False
+back = False
 sha_1 = False
 md5 = False
 sha_256 = False
@@ -82,22 +82,14 @@ def missingFilesList(path1, path2):
 #This is a function to copy the missing files to the destination
 def copyToMissingRobo(files, dest):
     for (dir, fileName) in files:
-        time.sleep(2.5)
+        #time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
         
-#check the arguments in argv to make sure they are valid and return a count
-def parseArg():
+def getFolders():
     
     global source
     global dest
 
-    #check if there is enough arguments to assume the source and destination files to be checked later
-    if len(sys.argv) >= 3 :
-        source = sys.argv[1]
-        dest = sys.argv[2]
-    elif len(sys.argv) > 2:
-        source = sys.argv[1]
-        dest = fileChooser()
     #check the source and destination folders for validity and choose new targets in case of issue
     if exists(source):
         print("Source: " + source)
@@ -110,11 +102,14 @@ def parseArg():
         print("Invalid destination path")
         dest = fileChooser()
 
+    #parseArgs()
+
+def parseArgs():
     #check the remaining arguments and set them if they are in the list of arguments to be accepted
     for case in sys.argv:
         if case in VALID_ARGUMENTS:
             setArg(case)
-        
+
 def fileChooser():
     while True :
         f = input("Enter a filename: ")
@@ -129,7 +124,7 @@ def setArg(argument):
     global sha_1
     global sha_256
     global robo
-    global backup
+    global back
     global replaceAll
     global timeStamp
     global cp
@@ -142,7 +137,7 @@ def setArg(argument):
         replaceAll = True
         print("ReplaceAll")
     if argument.lower() == "b" : 
-        backup = True
+        back = True
         print("Backup")
         time.sleep(3.0)
     if argument == "1" or argument == 1 :
@@ -184,7 +179,7 @@ def md5(filename) :
             md5.update(data)
     print("MD5: {0}".format(md5.hexdigest()))
     time.sleep(5.0)
-    return md5
+    return md5.hexdigest()
 
 def sha_256(filename) :
     sha256 = hashlib.sha256()
@@ -198,7 +193,15 @@ def sha_256(filename) :
     time.sleep(5.0)
     return sha256.hexdigest()
 
-def backup(source, destination, name = ""):
+def backup(source = "", destination = "", name = ""):
+    
+    #Error checking to make sure the source/dest exists
+    if not exists(source):
+        source = fileChooser()
+    if not exists(destination):
+        destination = fileChooser()
+
+    #if no name is passed in
     if name == "" :
         if input("Use {} as the default name for this backup?".format(str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop())).lower() == "y" :
             name = str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop()
@@ -211,6 +214,7 @@ def backup(source, destination, name = ""):
     #create a archive file or a folder containing a copy of verything in the source
     print(name)
 
+    #create the backup to the appropriate destination and folder name
     copyToMissingRobo(fileList(source),destination + "\\" + name)
 
     return True
@@ -222,13 +226,30 @@ def fileList(folderName):
             files.append((dirpath,f))
     return files
 
-def main():
+def menu():
     global source
     global dest
-    #check the arguments for switch cases 
-    #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
-    if len(sys.argv) == 1 :
-        print("# | Option \n" +
+    global copyAll
+    global md5
+    global sha_1
+    global sha_256
+    global robo
+    global back
+    global replaceAll
+    global timeStamp
+    global cp
+    global extentionFilter
+
+    #check the flags to see if the menu is needed
+    if back == True:
+        print("whaddup")
+        backup(source,dest,"asdffg")
+        input("hello?")
+        return True
+
+
+    #parseArgs()
+    print("# | Option \n" +
               "=====================\n" +
               "1.| MD5 hash of a file \n" +
               "2.| SHA1 hash of a file \n" +
@@ -236,42 +257,63 @@ def main():
               "4.| backup to a folder and create new copies of the files in the destination folder \n" +
               "5.| replace all files in a folder with those from a source")
 
-        choice = input("Enter a number: ")
-        #add a loop that repeats and asks for input if not given a number between 1-5 and 0 to exit
-        #filter the input for the menu
-        while True :
-            if choice == "0" :
-                return False
-            if choice == "1" : #md5 option
-                print(md5(fileChooser()))
-                time.sleep(15)
+    choice = input("Enter a number: ")
+    #add a loop that repeats and asks for input if not given a number between 1-5 and 0 to exit
+    #filter the input for the menu
+
+    while True :
+        if choice == "0" :
+            return False
+        if choice == "1" : #md5 option
+            print(md5(fileChooser()))
+            time.sleep(15)
+            return True
+        if choice == "2" : #sha1 option
+            print(sha_1(fileChooser()))
+            time.sleep(15)
+            return True
+        if choice == "3" : #sha256 option
+            print("Working on it")
+            time.sleep(5)
+            return True
+        if choice == "4" : #backup option
+            print("working on it --- new features warning")
+            backup(source,dest)
+            return True
+        if choice == "5" : #replace all option
+            print("This will replace all files in the destination.\nAre you sure this is what you want?")
+            if(input("Are You Sure?").lower()=="y"):
+                #add the call to replace all files here
                 return True
-            if choice == "2" : #sha1 option
-                print(sha_1(fileChooser()))
-                time.sleep(15)
-                return True
-            if choice == "3" : #sha256 option
-                print("Working on it")
-                time.sleep(5)
-                return True
-            if choice == "4" : #backup option
-                print("working on it")
-                backup("C:\\Users\\meatw\\Desktop\\school\\PONG","C:\\Users\\meatw\\Desktop\\missingFiles", "buttSniffer")
-                time.sleep(5)
-                return True
-            if choice == "5" : #replace all option
-                print("This will replace all files in the destination.\nAre you sure this is what you want?")
-                if(input("Are You Sure?").lower()=="y"):
-                    #add the call to replace all files here
-                    return true
                 
-            #must not be a real option so grab input again
-            choice = input("Enter a number please: ")
+        #must not be a real option so grab input again
+        choice = input("Enter a number please: ")
+    
+def main():
+    global source
+    global dest
+    global back
+    #check the arguments for switch cases 
+    #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
+    parseArgs()
+
+    if back == True :
+        print("shiiiiz")
+
+    if len(sys.argv) == 1: #no arguments passed to the program
+        menu()
+    elif len(sys.argv >=2 and exists(sys.argv[1]) and not exists(sys.argv[2])): #only source given
+        getFolders()
+        menu()
+    elif len(sys.argv >= 3 and exists(sys.argv[1]) and exists(sys.argv[2])):#source and destination given and acceptable
+        source = sys.argv[1]
+        dest = sys.argv[2]
+        menu()
+    else:#either the source and dest are not valid 
+        getFolders()
+        menu()
     return True
     #copyToMissing(missingFilesList(source, dest), dest)
     #add some form of flag checking to call appropriate flags
 if __name__ == "__main__":
     main()
-
-#else:
-    #copyToMissing(missingFilesList(), "E:\\Video\\Vids\\missingFiles" )
