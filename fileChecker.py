@@ -28,7 +28,7 @@ To do:
 from os import walk
 from os.path import exists
 from shutil import copyfile
-from subprocess import call
+from subprocess import STD_OUTPUT_HANDLE, call
 import sys
 import time
 import hashlib
@@ -85,21 +85,23 @@ def copyToMissingRobo(files, dest):
         #time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
         
-def getFolders():
+def getFolders(s,d):
     
     global source
     global dest
 
     #check the source and destination folders for validity and choose new targets in case of issue
-    if exists(source):
-        print("Source: " + source)
+    if exists(s):
+        print("Source: " + s)
+        source = s
     else :
-        print("Invalid source path")
+        print("{}is an invalid source path".format(s))
         source =fileChooser()
-    if exists(dest):
-        print("Destination: " + dest)
+    if exists(d):
+        print("Destination: " + d)
+        dest = d
     else :
-        print("Invalid destination path")
+        print("{} is an invalid destination path".format(d))
         dest = fileChooser()
 
     #parseArgs()
@@ -193,14 +195,13 @@ def sha_256(filename) :
     time.sleep(5.0)
     return sha256.hexdigest()
 
-def backup(source = "", destination = "", name = ""):
+def backup(s = "", destination = "", name = ""):
     
+    global source
+    global dest
     #Error checking to make sure the source/dest exists
-    if not exists(source):
-        source = fileChooser()
-    if not exists(destination):
-        destination = fileChooser()
-
+    getFolders(s,destination)
+    
     #if no name is passed in
     if name == "" :
         if input("Use {} as the default name for this backup?".format(str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop())).lower() == "y" :
@@ -213,9 +214,10 @@ def backup(source = "", destination = "", name = ""):
                 
     #create a archive file or a folder containing a copy of verything in the source
     print(name)
+    input("")
 
     #create the backup to the appropriate destination and folder name
-    copyToMissingRobo(fileList(source),destination + "\\" + name)
+    copyToMissingRobo(fileList(source),dest + "\\" + name)
 
     return True
     
@@ -246,9 +248,7 @@ def menu():
         backup(source,dest,"asdffg")
         input("hello?")
         return True
-
-
-    #parseArgs()
+    
     print("# | Option \n" +
               "=====================\n" +
               "1.| MD5 hash of a file \n" +
@@ -297,8 +297,14 @@ def main():
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
     parseArgs()
 
+    if len(sys.argv) >=3 :
+        source = sys.argv[1]
+        dest = sys.argv[2]
+
     if back == True :
-        print("shiiiiz")
+        print("Backup mode initialized:\n")
+        backup(source,dest)
+        return True
 
     if len(sys.argv) == 1: #no arguments passed to the program
         menu()
@@ -308,6 +314,8 @@ def main():
     elif len(sys.argv >= 3 and exists(sys.argv[1]) and exists(sys.argv[2])):#source and destination given and acceptable
         source = sys.argv[1]
         dest = sys.argv[2]
+        print("Working with source and dest")
+        input("")
         menu()
     else:#either the source and dest are not valid 
         getFolders()
