@@ -27,7 +27,7 @@ To do:
 
 from os import walk
 from os.path import exists
-from shutil import copyfile
+import shutil
 from subprocess import call
 from argparse import ArgumentParser
 import sys
@@ -110,7 +110,6 @@ def getFolders(s,d):
 
     #parseArgs()
 
-
 def fileChooser(msg):
     while True :
         f = input(msg)
@@ -118,7 +117,6 @@ def fileChooser(msg):
             if(input("Are you sure y/n: ").lower() == "y"):
                 return f
     
-
 def sha_1(filename) :
     sha1 = hashlib.sha1()
     with open(filename,'rb') as f:
@@ -176,7 +174,13 @@ def backup(s = "", destination = "", name = ""):
     print(name)
     
     #create the backup to the appropriate destination and folder name
-    copyToMissingRobo(fileList(source),dest + "\\" + name)
+    #copyToMissingRobo(fileList(source),dest + "\\" + name)
+    try :
+        shutil.copytree(src=source,dst=(dest+'\\'+name))
+    except FileExistsError:
+        print("Backup name already exists\n")
+        backup(source,dest)
+
 
     return True
     
