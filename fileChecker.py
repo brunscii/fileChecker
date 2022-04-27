@@ -28,26 +28,30 @@ To do:
 from os import walk
 from os.path import exists
 from shutil import copyfile
-from subprocess import STD_OUTPUT_HANDLE, call
+from subprocess import call
+from argparse import ArgumentParser
 import sys
 import time
 import hashlib
 import datetime
 
-#valid arguments that the program can take
-VALID_ARGUMENTS = ("y","r","b","1","5","256","t","ext","log","robo","cp")
-#flags for the arguments to set or unset
-copyAll = False
-replaceAll = False
-back = False
-sha_1 = False
-md5 = False
-sha_256 = False
-timeStamp = False
-extentionFilter = False
-log = False
-robo = True
-cp = False
+
+parser = ArgumentParser()
+parser.add_argument('names',nargs='*')
+parser.add_argument('-cp',"--cp",action = "store_true",help = "copy the file using the command lines cp command")
+parser.add_argument('-r','--r',action = "store_true",help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
+parser.add_argument('-b',"--b",action = "store_true",help = "backup by creating a folder with a copy of the source in the new source folder")
+parser.add_argument('-1',"--1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+parser.add_argument('-5',"--5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
+parser.add_argument('-256',"--256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+parser.add_argument('-t',"--t",action = "store_true",help = "timestamps all of the files in the destination to show they are up to date after the backup")
+parser.add_argument('-ext',"--ext",type = str,action = "append",nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
+parser.add_argument('-log',"--log",type=str,action = "append",nargs='+',help = "create a log file for the copies or a list of files missing in case of the nocopy command")
+parser.add_argument('-robo',"--robo",action = "store_true",help = "copy the file using the command lines robo command")
+parser.add_argument('-nocopy',"--nocopy",action = "store_true",help = "just make a list of missing files")
+
+
+
 source = "asdf"
 dest = "asdf"
 
@@ -96,68 +100,24 @@ def getFolders(s,d):
         source = s
     else :
         print("{}is an invalid source path".format(s))
-        source =fileChooser()
+        source =fileChooser("Enter a source: ")
     if exists(d):
         print("Destination: " + d)
         dest = d
     else :
         print("{} is an invalid destination path".format(d))
-        dest = fileChooser()
+        dest = fileChooser("Enter a destination: ")
 
     #parseArgs()
 
-def parseArgs():
-    #check the remaining arguments and set them if they are in the list of arguments to be accepted
-    for case in sys.argv:
-        if case in VALID_ARGUMENTS:
-            setArg(case)
 
-def fileChooser():
+def fileChooser(msg):
     while True :
-        f = input("Enter a filename: ")
+        f = input(msg)
         if exists(f) :
             if(input("Are you sure y/n: ").lower() == "y"):
                 return f
     
-def setArg(argument):
-
-    global copyAll
-    global md5
-    global sha_1
-    global sha_256
-    global robo
-    global back
-    global replaceAll
-    global timeStamp
-    global cp
-    global extentionFilter
-
-    if argument.lower() == "y" : 
-        copyAll = True
-        print("CopyAll")
-    if argument.lower() == "r" : 
-        replaceAll = True
-        print("ReplaceAll")
-    if argument.lower() == "b" : 
-        back = True
-        print("Backup")
-        time.sleep(3.0)
-    if argument == "1" or argument == 1 :
-        sha_1 = True
-    if argument.lower() == "t" :
-        timeStamp = True
-    if argument.lower() == "5" or argument == 5 :
-        md5 = True
-    if argument.lower() == "256" or argument == 256 :
-        sha_256 = True
-    if argument.lower() == "ext" :
-        extentionFilter = True
-    if argument.lower() == "log" :
-        log = True
-    if argument.lower() == "robo" : 
-        robo = True
-    if argument.lower() == "cp" :
-        cp = True
 
 def sha_1(filename) :
     sha1 = hashlib.sha1()
@@ -214,8 +174,7 @@ def backup(s = "", destination = "", name = ""):
                 
     #create a archive file or a folder containing a copy of verything in the source
     print(name)
-    input("")
-
+    
     #create the backup to the appropriate destination and folder name
     copyToMissingRobo(fileList(source),dest + "\\" + name)
 
@@ -229,26 +188,7 @@ def fileList(folderName):
     return files
 
 def menu():
-    global source
-    global dest
-    global copyAll
-    global md5
-    global sha_1
-    global sha_256
-    global robo
-    global back
-    global replaceAll
-    global timeStamp
-    global cp
-    global extentionFilter
 
-    #check the flags to see if the menu is needed
-    if back == True:
-        print("whaddup")
-        backup(source,dest,"asdffg")
-        input("hello?")
-        return True
-    
     print("# | Option \n" +
               "=====================\n" +
               "1.| MD5 hash of a file \n" +
@@ -289,19 +229,34 @@ def menu():
         #must not be a real option so grab input again
         choice = input("Enter a number please: ")
     
+def timeStamp(destination):
+    return True
+    #add code to run touch on all of the files in the destination folder
+
 def main():
     global source
     global dest
-    global back
+    
     #check the arguments for switch cases 
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
-    parseArgs()
+    global parser
+    args = parser.parse_args()
+    if len(args.names)>0:
+        if exists(args.names[0]):
+            source = args.names[0]
+            if exists(args.names[1]):
+                dest = args.names[1]
+            else:
+                dest = fileChooser("Enter a destination: ")
+        else:
+            source = fileChooser("Enter a source: ")
+            dest = fileChooser("Enter a destination: ")
 
     if len(sys.argv) >=3 :
         source = sys.argv[1]
         dest = sys.argv[2]
 
-    if back == True :
+    if args.b == True :
         print("Backup mode initialized:\n")
         backup(source,dest)
         return True
