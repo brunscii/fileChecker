@@ -25,7 +25,9 @@ To do:
 
 '''
 
-from os import walk
+import argparse
+from io import DEFAULT_BUFFER_SIZE
+from os import chdir, walk
 from os.path import exists
 import shutil
 from subprocess import call
@@ -49,7 +51,7 @@ parser.add_argument('-ext',"--ext",type = str,action = "append",nargs = '+',help
 parser.add_argument('-log',"--log",type=str,action = "append",nargs='+',help = "create a log file for the copies or a list of files missing in case of the nocopy command")
 parser.add_argument('-robo',"--robo",action = "store_true",help = "copy the file using the command lines robo command")
 parser.add_argument('-nocopy',"--nocopy",action = "store_true",help = "just make a list of missing files")
-
+parser.add_argument('-a', '--a',action='store_true',help='creates a zip file of the source folder')
 
 
 source = "asdf"
@@ -167,14 +169,17 @@ def backup(s = "", destination = "", name = ""):
         else:
             while True :
                 name = input("Enter a backup name then: ")
-                if input("are you sure?").lower() == "y":
+                x = input("are you sure?").lower()
+                if x == "y":
                     break
+                elif x =="exit":
+                    return False
                 
     #create a archive file or a folder containing a copy of verything in the source
     print(name)
     
     #create the backup to the appropriate destination and folder name
-    #copyToMissingRobo(fileList(source),dest + "\\" + name)
+    
     try :
         shutil.copytree(src=source,dst=(dest+'\\'+name))
     except FileExistsError:
@@ -183,7 +188,51 @@ def backup(s = "", destination = "", name = ""):
 
 
     return True
+ 
+def archive(s = "", destination = "", name = "",filt = False):
     
+    global source
+    global dest
+    global parser
+    args = parser.parse_args()
+    #Error checking to make sure the source/dest exists
+    getFolders(s,destination)
+    
+    #if no name is passed in
+    if name == "" :
+        if input("Use {} as the default name for this archive?".format(str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop())).lower() == "y" :
+            name = str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop()
+        else:
+            while True :
+                name = input("Enter a backup name then: ")
+                x = input("are you sure?").lower()
+                if x == "y":
+                    break
+                elif x =="exit":
+                    return False
+                
+    #create a archive file or a folder containing a copy of verything in the source
+    print(name)
+    
+    #create the backup to the appropriate destination and folder name
+    filts = []
+    if filt:
+        for e in args.ext:
+            filts.append('.'+e)
+
+    try :
+        chdir(dest)
+        #shutil.ignore_patterns()
+        print(shutil.make_archive(base_name=name,root_dir=dest,base_dir=source,format='zip'))
+        input("Press any key...")
+    except FileExistsError:
+        print("archive name already exists\n")
+        backup(source,dest)
+
+
+    return True
+
+
 def fileList(folderName):
     files = []
     for(dirpath, dirname, filenames) in walk(folderName) :
@@ -226,14 +275,15 @@ def menu():
             return True
         if choice == "5" : #replace all option
             print("This will replace all files in the destination.\nAre you sure this is what you want?")
-            if(input("Are You Sure?").lower()=="y"):
+            archive(source,dest)
                 #add the call to replace all files here
-                return True
+            return True
                 
         #must not be a real option so grab input again
         choice = input("Enter a number please: ")
     
 def timeStamp(destination):
+    
     return True
     #add code to run touch on all of the files in the destination folder
 
@@ -244,41 +294,40 @@ def main():
     #check the arguments for switch cases 
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
     global parser
+    exFilter = False
     args = parser.parse_args()
-    if len(args.names)>0:
+    
+    if len(args.names)>=2:
         if exists(args.names[0]):
             source = args.names[0]
-            if exists(args.names[1]):
-                dest = args.names[1]
-            else:
-                dest = fileChooser("Enter a destination: ")
-        else:
-            source = fileChooser("Enter a source: ")
-            dest = fileChooser("Enter a destination: ")
+        elif not source:
+            source=fileChooser("Enter a source name: ")
+        if exists(args.names[1]):
+            dest = args.names[1]
+        elif not dest:
+            dest=fileChooser("Enter a destination name: ")
+    elif len(args.names) == 1:
+        if exists(args.names[0]):
+            source = args.names[0]
 
-    if len(sys.argv) >=3 :
-        source = sys.argv[1]
-        dest = sys.argv[2]
 
+    '''if args.ext:
+        exFilter = True
+        for i in args.ext : 
+            print(i)
+        input("ASDASDASDASD")'''
     if args.b == True :
         print("Backup mode initialized:\n")
         backup(source,dest)
         return True
-
-    if len(sys.argv) == 1: #no arguments passed to the program
+    if args.a == True :
+        print("Archive mode initialized:\n")
+        archive(source,dest,exFilter)
+        return True
+    
+    if len(args.names) == 0: #no arguments passed to the program
         menu()
-    elif len(sys.argv >=2 and exists(sys.argv[1]) and not exists(sys.argv[2])): #only source given
-        getFolders()
-        menu()
-    elif len(sys.argv >= 3 and exists(sys.argv[1]) and exists(sys.argv[2])):#source and destination given and acceptable
-        source = sys.argv[1]
-        dest = sys.argv[2]
-        print("Working with source and dest")
-        input("")
-        menu()
-    else:#either the source and dest are not valid 
-        getFolders()
-        menu()
+    
     return True
     #copyToMissing(missingFilesList(source, dest), dest)
     #add some form of flag checking to call appropriate flags
