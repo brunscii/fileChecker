@@ -27,7 +27,7 @@ To do:
 
 from os import walk
 from os.path import exists
-import shutil 
+from shutil import copyfile
 from subprocess import STD_OUTPUT_HANDLE, call
 import sys
 import time
@@ -85,7 +85,6 @@ def copyToMissingRobo(files, dest):
         #time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
         
-
 def getFolders(s,d):
     
     global source
@@ -104,6 +103,8 @@ def getFolders(s,d):
     else :
         print("{} is an invalid destination path".format(d))
         dest = fileChooser()
+
+    #parseArgs()
 
 def parseArgs():
     #check the remaining arguments and set them if they are in the list of arguments to be accepted
@@ -216,8 +217,7 @@ def backup(s = "", destination = "", name = ""):
     input("")
 
     #create the backup to the appropriate destination and folder name
-    #copyToMissingRobo(fileList(source),dest + "\\" + name)
-    shutil.make_archive(dest + name,"zip",source)
+    copyToMissingRobo(fileList(source),dest + "\\" + name)
 
     return True
     
@@ -227,7 +227,6 @@ def fileList(folderName):
         for f in filenames:
             files.append((dirpath,f))
     return files
-
 
 def menu():
     global source
