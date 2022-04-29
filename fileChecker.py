@@ -25,10 +25,10 @@ To do:
 
 '''
 
-import argparse
-from io import DEFAULT_BUFFER_SIZE
 from os import chdir, walk
+import os
 from os.path import exists
+from pathlib import Path
 import shutil
 from subprocess import call
 from argparse import ArgumentParser
@@ -248,7 +248,8 @@ def menu():
               "2.| SHA1 hash of a file \n" +
               "3.| SHA256 hash of a file\n" +
               "4.| backup to a folder and create new copies of the files in the destination folder \n" +
-              "5.| replace all files in a folder with those from a source")
+              "5.| replace all files in a folder with those from a source\n" +
+              "6.| timestamp all of the files in a directory\n")
 
     choice = input("Enter a number: ")
     #add a loop that repeats and asks for input if not given a number between 1-5 and 0 to exit
@@ -278,14 +279,23 @@ def menu():
             archive(source,dest)
                 #add the call to replace all files here
             return True
-                
+        if choice == "6" : #timestamp the destination folder
+            timeStamp(dest)
+            return True
         #must not be a real option so grab input again
         choice = input("Enter a number please: ")
-    
+        
+#time stamps all of the files and folders in a directory
 def timeStamp(destination):
-    
+    if exists(destination):        
+        for path,file in fileList(destination):
+            Path(path).touch()
+            Path(os.path.join(path,file)).touch()
+            #timestamp the file at the above path
+    else:
+        timeStamp(fileChooser('Enter a destination: '))
     return True
-    #add code to run touch on all of the files in the destination folder
+    
 
 def main():
     global source
@@ -309,7 +319,7 @@ def main():
     elif len(args.names) == 1:
         if exists(args.names[0]):
             source = args.names[0]
-
+        
 
     '''if args.ext:
         exFilter = True
@@ -319,12 +329,13 @@ def main():
     if args.b == True :
         print("Backup mode initialized:\n")
         backup(source,dest)
-        return True
+        #return True
     if args.a == True :
         print("Archive mode initialized:\n")
-        archive(source,dest,exFilter)
-        return True
-    
+        archive(source,dest)
+        #return True
+    if args.t :
+        Path(dest).touch()
     if len(args.names) == 0: #no arguments passed to the program
         menu()
     
