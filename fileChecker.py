@@ -38,21 +38,25 @@ import hashlib
 import datetime
 
 
-parser = ArgumentParser()
+parser = ArgumentParser(description='Fancy Copy and Paste')
+copyType = parser.add_mutually_exclusive_group()
+hashCheckType = parser.add_mutually_exclusive_group()
+
 parser.add_argument('names',nargs='*')
-parser.add_argument('-cp',"--cp",action = "store_true",help = "copy the file using the command lines cp command")
-parser.add_argument('-r','--r',action = "store_true",help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
-parser.add_argument('-b',"--b",action = "store_true",help = "backup by creating a folder with a copy of the source in the new source folder")
-parser.add_argument('-1',"--1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
-parser.add_argument('-5',"--5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
-parser.add_argument('-256',"--256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
 parser.add_argument('-t',"--t",action = "store_true",help = "timestamps all of the files in the destination to show they are up to date after the backup")
 parser.add_argument('-ext',"--ext",type = str,action = "append",nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
 parser.add_argument('-log',"--log",type=str,action = "append",nargs='+',help = "create a log file for the copies or a list of files missing in case of the nocopy command")
-parser.add_argument('-robo',"--robo",action = "store_true",help = "copy the file using the command lines robo command")
-parser.add_argument('-nocopy',"--nocopy",action = "store_true",help = "just make a list of missing files")
-parser.add_argument('-a', '--a',action='store_true',help='creates a zip file of the source folder')
 
+copyType.add_argument('-cp',"--cp",action = "store_true",help = "copy the file using the command lines cp command")
+copyType.add_argument('-r','--r',action = "store_true",help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
+copyType.add_argument('-b',"--b",action = "store_true",help = "backup by creating a folder with a copy of the source in the new source folder")
+copyType.add_argument('-robo',"--robo",action = "store_true",help = "copy the file using the command lines robo command")
+copyType.add_argument('-n',"--nocopy",action = "store_true",help = "just make a list of missing files")
+copyType.add_argument('-a', '--a',action='store_true',help='creates a zip file of the source folder')
+
+hashCheckType.add_argument('-1',"--1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-5',"--5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
+hashCheckType.add_argument('-256',"--256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
 
 source = "asdf"
 dest = "asdf"
@@ -61,6 +65,14 @@ dest = "asdf"
 #returns missing files in format of (dir,file)
 def missingFilesList(path1, path2):
     missingFiles = []
+    if not exists(path1):
+        path1 = fileChooser("Enter a source: ")
+        global source
+        source = path1
+    if not exists(path2):
+        path2 = fileChooser("Enter a destination: ")
+        global dest
+        dest = path2
     if exists(path1) and exists(path2) :
         print(path1)
 
@@ -82,7 +94,7 @@ def missingFilesList(path1, path2):
                     found = True
             if found == False:
                 missingFiles.append((dirPath1,fileName1))
-
+   
     return missingFiles
 
 #This is a function to copy the missing files to the destination
@@ -109,8 +121,6 @@ def getFolders(s,d):
     else :
         print("{} is an invalid destination path".format(d))
         dest = fileChooser("Enter a destination: ")
-
-    #parseArgs()
 
 def fileChooser(msg):
     while True :
@@ -155,10 +165,14 @@ def sha_256(filename) :
     time.sleep(5.0)
     return sha256.hexdigest()
 
-def backup(s = "", destination = "", name = ""):
+def extFilter(src,names):
+    return names
+
+def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none',options=[]):
     
     global source
     global dest
+    
     #Error checking to make sure the source/dest exists
     getFolders(s,destination)
     
@@ -175,62 +189,42 @@ def backup(s = "", destination = "", name = ""):
                 
     #create a archive file or a folder containing a copy of verything in the source
     print(name)
-    
-    #create the backup to the appropriate destination and folder name
-    
-    try :
-        shutil.copytree(src=source,dst=(dest+'\\'+name))
-    except FileExistsError:
-        print("Backup name already exists\n")
-        backup(source,dest)
-
-
+    #use the copytree as default
+    if copyVer=='default':      
+        print('default:\n')
+        try :
+            shutil.copytree(src=source,dst=os.path.join(dest,name))
+        except FileExistsError:
+            print("Backup name already exists\n")
+            backup(source,dest)
+    #nocopy command
+    elif copyVer == 'nocopy':   
+        print('nocopy:\n')
+        filePrint = lambda path,file: print(os.path.join(path,file))
+        for (p,f) in missingFilesList(source,dest):
+            filePrint(p,f)
+    #backup protocol
+    elif copyVer == 'backup':   
+        try :
+            shutil.copytree(src=source,dst=os.path.join(dest,name))
+        except FileExistsError:
+            print("Backup name already exists\n")
+            backup(source,dest)
+    #archive by creating a zip
+    elif copyVer == 'archive':  
+        try :
+            chdir(dest)
+            #shutil.ignore_patterns()
+            print(shutil.make_archive(base_name=name,root_dir=dest,base_dir=source,format='zip'))
+            input("Press any key...")
+        except FileExistsError:
+            print("archive name already exists\n")
+            backup(source,dest)
+    #robocopy
+    elif copyVer == 'robo':
+        copyToMissingRobo(missingFilesList(source,dest),dest)
     return True
  
-def archive(s = "", destination = "", name = "",filt = False):
-    
-    global source
-    global dest
-    global parser
-    args = parser.parse_args()
-    #Error checking to make sure the source/dest exists
-    getFolders(s,destination)
-    
-    #if no name is passed in
-    if name == "" :
-        if input("Use {} as the default name for this archive?".format(str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop())).lower() == "y" :
-            name = str(datetime.date.today().strftime("%m-%d-%Y")) + "-" + source.rsplit("\\").pop()
-        else:
-            while True :
-                name = input("Enter a backup name then: ")
-                x = input("are you sure?").lower()
-                if x == "y":
-                    break
-                elif x =="exit":
-                    return False
-                
-    #create a archive file or a folder containing a copy of verything in the source
-    print(name)
-    
-    #create the backup to the appropriate destination and folder name
-    filts = []
-    if filt:
-        for e in args.ext:
-            filts.append('.'+e)
-
-    try :
-        chdir(dest)
-        #shutil.ignore_patterns()
-        print(shutil.make_archive(base_name=name,root_dir=dest,base_dir=source,format='zip'))
-        input("Press any key...")
-    except FileExistsError:
-        print("archive name already exists\n")
-        backup(source,dest)
-
-
-    return True
-
-
 def fileList(folderName):
     files = []
     for(dirpath, dirname, filenames) in walk(folderName) :
@@ -253,7 +247,7 @@ def menu():
     #add a loop that repeats and asks for input if not given a number between 1-5 and 0 to exit
     #filter the input for the menu
 
-    while True :
+    while True : #option catcher
         if choice == "0" :
             return False
         if choice == "1" : #md5 option
@@ -293,7 +287,6 @@ def timeStamp(destination):
     else:
         timeStamp(fileChooser('Enter a destination: '))
     return True
-    
 
 def main():
     global source
@@ -302,7 +295,7 @@ def main():
     #check the arguments for switch cases 
     #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
     global parser
-    exFilter = False
+    
     args = parser.parse_args()
     
     if len(args.names)>=2:
@@ -319,21 +312,18 @@ def main():
             source = args.names[0]
         
 
-    '''if args.ext:
-        exFilter = True
-        for i in args.ext : 
-            print(i)
-        input("ASDASDASDASD")'''
-    if args.b == True :
+    if args.b:
         print("Backup mode initialized:\n")
-        backup(source,dest)
+        backup(source,dest,copyVer='backup')
         #return True
-    if args.a == True :
+    if args.a:
         print("Archive mode initialized:\n")
-        archive(source,dest)
+        backup(source,dest,copyVer='archive')
         #return True
+    if args.nocopy:
+        backup(source,dest,copyVer='nocopy',name='none')
     if args.t :
-        Path(dest).touch()
+        timeStamp(dest)
     if len(args.names) == 0: #no arguments passed to the program
         menu()
     

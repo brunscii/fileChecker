@@ -35,7 +35,16 @@ if args.cp == True:
     print("cp")
     input()
 if args.ext:
+    extentions = []
     if len(args.ext) > 0:
+        ext = lambda s : f".{s}" 
+        
+        print(args.ext)
         for i in args.ext:
             print(i)
-        input()
+            for x in i:
+                extentions.append(ext(x))
+        
+        for s in extentions:
+            print(s)
+        input("Look Good")
