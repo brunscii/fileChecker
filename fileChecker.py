@@ -1,26 +1,13 @@
 '''Author: Chris Carlin
 
-To do: 
-> add a MD5/SHA-1 hash checker to see if the copied files are the same file or to see if the files are the same before coppying
-> add persistence through a temp file that shows the files being copied and that has been copied in case of unexpected shutdowns
-> show the persistence file that will show any possibly uncoipied files and ask if you want to proceed on run...possibly a status run
-> add multi threading to copy multiple files at a time
-> add a user interface that shows the file changes in a git type of way
-> add some kind of a service based automation to perform scheduled backups
-> display the list of files that are going to be copied and ask permissions, maybe do a -y type of system
-> add the ability to copy files in linux or windows by choosing the copy method
-> add a option switch that will allow future expandability
-    -y yes copy all of the files on ask pronpt
-    -r replace the files that are in the destination with the current files from source
-    -b backup the source to the destination by creating a copy folder that will be named <source-date>
-    -1 do a SHA-1 checksum to determine if the files in the source are the same as in the destination
-    -5 do a MD5 checksum to detiermine if the files in the source are the same as in the destination
-    -256 do a SHA-256 checksum to determine if the files in the source are the same as in the destination
-    -t time stamp everthing in the destination to show that it is up to date --touch
-    -ext only copy files of a certain extention type
-    -log log status messages into a log file with name <source-dest-date>
-    -robo use robocopy
-    -cp us cp
+ToDo:
+
+>fix the double menu with no source and destination - return true after
+>check if only source and no destination and check for appropriate flags (1,5,256,t,log)
+>add a logging feature
+>add a way to read the logs for a resume feature
+>add a check in the menu for after the copy type is entered
+>
     
 
 '''
@@ -42,11 +29,12 @@ parser = ArgumentParser(description='Fancy Copy and Paste')
 copyType = parser.add_mutually_exclusive_group()
 hashCheckType = parser.add_mutually_exclusive_group()
 
-parser.add_argument('names',nargs='*')
+parser.add_argument('source',type=str,nargs='?',help='the source of the operation')
+parser.add_argument('destination',type=str,nargs='?',help='the destination of the operation')
 parser.add_argument('-t',"--t",action = "store_true",help = "timestamps all of the files in the destination to show they are up to date after the backup")
 parser.add_argument('-ext',"--ext",type = str,action = "append",nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
 parser.add_argument('-log',"--log",type=str,action = "append",nargs='+',help = "create a log file for the copies or a list of files missing in case of the nocopy command")
-
+ 
 copyType.add_argument('-cp',"--cp",action = "store_true",help = "copy the file using the command lines cp command")
 copyType.add_argument('-r','--r',action = "store_true",help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
 copyType.add_argument('-b',"--b",action = "store_true",help = "backup by creating a folder with a copy of the source in the new source folder")
@@ -54,11 +42,11 @@ copyType.add_argument('-robo',"--robo",action = "store_true",help = "copy the fi
 copyType.add_argument('-n',"--nocopy",action = "store_true",help = "just make a list of missing files")
 copyType.add_argument('-a', '--a',action='store_true',help='creates a zip file of the source folder')
 
-hashCheckType.add_argument('-1',"--1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
-hashCheckType.add_argument('-5',"--5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
-hashCheckType.add_argument('-256',"--256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-1',"--sha1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-5',"--md5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
+hashCheckType.add_argument('-256',"--sha256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
 
-source = "asdf"
+source='asdf'
 dest = "asdf"
 
 #checks path1 against path2 for missing files in path2 that exist in path1
@@ -122,7 +110,7 @@ def getFolders(s,d):
         print("{} is an invalid destination path".format(d))
         dest = fileChooser("Enter a destination: ")
 
-def fileChooser(msg):
+def fileChooser(msg='Enter a filename: '):
     while True :
         f = input(msg)
         if exists(f) :
@@ -137,8 +125,6 @@ def sha_1(filename) :
             if not data :
                 break
             sha1.update(data)
-    print("SHA1: {0}".format(sha1.hexdigest()))
-    time.sleep(5.0)
     return sha1.hexdigest()
 
 def md5(filename) :
@@ -283,7 +269,6 @@ def timeStamp(destination):
         for path,file in fileList(destination):
             Path(path).touch()
             Path(os.path.join(path,file)).touch()
-            #timestamp the file at the above path
     else:
         timeStamp(fileChooser('Enter a destination: '))
     return True
@@ -291,26 +276,34 @@ def timeStamp(destination):
 def main():
     global source
     global dest
-    
-    #check the arguments for switch cases 
-    #sha_1("C:\\Users\\meatw\\Desktop\\school\\PONG\\ball.cpp")
     global parser
     
     args = parser.parse_args()
-    
-    if len(args.names)>=2:
-        if exists(args.names[0]):
-            source = args.names[0]
-        elif not source:
+    if args.source:
+        if exists(args.source):
+            source = args.source
+        else:
             source=fileChooser("Enter a source name: ")
-        if exists(args.names[1]):
-            dest = args.names[1]
-        elif not dest:
-            dest=fileChooser("Enter a destination name: ")
-    elif len(args.names) == 1:
-        if exists(args.names[0]):
-            source = args.names[0]
+    else:
+        menu()
+        return True
         
+    if args.destination: #means we had a source that was valid or attempted and a destination that was entered
+        if exists(args.destination):
+            dest = args.destination
+        else:      
+            dest=fileChooser("Enter a destination name: ")
+    else: #no destination entered - Check for single file flags and if none then 
+        if args.sha1:
+            if os.path.isdir(source):
+                for dir,filename in fileList(source):
+                    fname = os.path.join(dir,filename).format("%-20s",)
+                    s1 = sha_1(os.path.join(dir,filename))
+                    print(f"{fname : <10} SHA1: {s1}")
+                input("....")
+            else:
+                print(sha_1(source))
+                input("....")
 
     if args.b:
         print("Backup mode initialized:\n")
@@ -324,7 +317,7 @@ def main():
         backup(source,dest,copyVer='nocopy',name='none')
     if args.t :
         timeStamp(dest)
-    if len(args.names) == 0: #no arguments passed to the program
+    if len(source) == 0: #no arguments passed to the program
         menu()
     
     return True
