@@ -52,6 +52,7 @@ dest = "asdf"
 #checks path1 against path2 for missing files in path2 that exist in path1
 #returns missing files in format of (dir,file)
 def missingFilesList(path1, path2):
+    '''returns a tuple of dir,file that represent the path of the missing files'''
     missingFiles = []
     if not exists(path1):
         path1 = fileChooser("Enter a source: ")
@@ -218,15 +219,45 @@ def fileList(folderName):
             files.append((dirpath,f))
     return files
 
-def menu():
+def md5_wrapper():
+    return print(md5(fileChooser("Enter a file: ")))
+def sha1_wrapper():
+    return print(sha_1(fileChooser("Enter a file: ")))
+def sha256_wrapper():
+    return print(sha_256(fileChooser("Enter a file: ")))
+def backup_wrapper():
+    return backup(source,dest)
+def menu1(options=None):
+    if not options: #no options are given so assume the basic menu
+        options = [(1,"MD5 hash of a file",md5_wrapper),
+                   (2,"SHA1 hash of a file",sha1_wrapper),
+                   (3,"SHA256 hash of a file",sha256_wrapper),
+                   (4,"backup to a folder and create new copies of the files in the destination folder",backup_wrapper)]
+    if options:
+        print("# | Option")
+        for num,desc, a in options:
+            print(f"{num} | {desc}")
+        choice = input("Enter a number: ")
+        while True:
+            if choice == '0':
+                return False
+            if int(choice) <= len(options) and int(choice) >0:
+                for num,desc,fun in options:
+                    if num == int(choice):
+                        fun()
+                        return True
 
-    print("# | Option \n" +
-              "=====================\n" +
-              "1.| MD5 hash of a file \n" +
-              "2.| SHA1 hash of a file \n" +
-              "3.| SHA256 hash of a file\n" +
-              "4.| backup to a folder and create new copies of the files in the destination folder \n" +
-              "5.| replace all files in a folder with those from a source\n" +
+def menu():#change to menu(options) and pass in the options as a tuple number,desc,function_to_be_called and restructure the menu to show the options take input and run the function for the option
+    '''The menu that is shown for the fileChecker program
+        # | Option
+        n | Description'''
+    print("# | Option \n" ,
+              "=====================\n" ,
+              "1.| MD5 hash of a file \n" ,
+              "2.| SHA1 hash of a file \n" ,
+              "3.| SHA256 hash of a file\n" ,
+              "4.| backup to a folder and create new copies of the files in the destination folder \n" ,
+              "5.| replace all files in a folder with those from a source\n" ,
               "6.| timestamp all of the files in a directory\n")
 
     choice = input("Enter a number: ")
@@ -254,7 +285,7 @@ def menu():
             return True
         if choice == "5" : #replace all option
             print("This will replace all files in the destination.\nAre you sure this is what you want?")
-            archive(source,dest)
+            backup(source,dest,copyVer='archive')
                 #add the call to replace all files here
             return True
         if choice == "6" : #timestamp the destination folder
@@ -317,7 +348,7 @@ def main():
         backup(source,dest,copyVer='nocopy',name='none')
     if args.t :
         timeStamp(dest)
-    if len(source) == 0: #no arguments passed to the program
+    if len(args.names) == 0: #no arguments passed to the program
         menu()
     
     return True
