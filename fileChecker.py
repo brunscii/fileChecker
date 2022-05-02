@@ -219,6 +219,19 @@ def fileList(folderName):
             files.append((dirpath,f))
     return files
 
+def getCopyType():
+    opt = [(1,"Robo",None),
+            (2,"Archive",None),
+            (3,"Replace",None)]
+    choice = menu1(opt)
+    if choice == 1:
+        return 'robo'
+    if choice == 2:
+        return 'archive'
+    if choice == 3:
+        return 'replace'
+
+    return False
 def md5_wrapper():
     return print(md5(fileChooser("Enter a file: ")))
 def sha1_wrapper():
@@ -226,13 +239,20 @@ def sha1_wrapper():
 def sha256_wrapper():
     return print(sha_256(fileChooser("Enter a file: ")))
 def backup_wrapper():
-    return backup(source,dest)
+    return backup(source,dest,getCopyType)
+def archive_wrapper():
+    return backup(source,dest,'archive')
+def timestamp_wrapper():
+    return timestamp(source)
+
 def menu1(options=None):
     if not options: #no options are given so assume the basic menu
         options = [(1,"MD5 hash of a file",md5_wrapper),
                    (2,"SHA1 hash of a file",sha1_wrapper),
                    (3,"SHA256 hash of a file",sha256_wrapper),
-                   (4,"backup to a folder and create new copies of the files in the destination folder",backup_wrapper)]
+                   (4,"backup to a folder and create new copies of the files in the destination folder",backup_wrapper),
+                   (5,"replace all files in a folder with those from a source",archive_wrapper),
+                   (6,"timestamp all of the files in a directory",timestamp_wrapper)]
     if options:
         print("# | Option")
         for num,desc, a in options:
@@ -243,9 +263,11 @@ def menu1(options=None):
                 return False
             if int(choice) <= len(options) and int(choice) >0:
                 for num,desc,fun in options:
-                    if num == int(choice):
+                    if num == int(choice) and fun:
                         fun()
                         return True
+                    elif num == int(choice) and not fun:
+                        return int(choice)
 
 def menu():#change to menu(options) and pass in the options as a tuple number,desc,function_to_be_called and restructure the menu to show the options take input and run the function for the option
     '''The menu that is shown for the fileChecker program
@@ -291,6 +313,7 @@ def menu():#change to menu(options) and pass in the options as a tuple number,de
         if choice == "6" : #timestamp the destination folder
             timeStamp(dest)
             return True
+        
         #must not be a real option so grab input again
         choice = input("Enter a number please: ")
         
