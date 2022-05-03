@@ -152,6 +152,33 @@ def sha_256(filename) :
     time.sleep(5.0)
     return sha256.hexdigest()
 
+def getFileHashDict(foldername):
+    listOfFiles = {}
+    #chdir(foldername)
+    for dirpath,filename in fileList(foldername):
+        fpath = path.join(dirpath,filename)
+        listOfFiles[sha_1(fpath)] = fpath
+        
+    return listOfFiles
+
+def checkMissingIntact(sourceDict, destDict, rootFolder ):
+    '''Takes a dictionary of hash:path\\filename and returns a list of files missing from the hash list and the file structure.
+    if the hash matches but the file is in a different structure in the destination than in the source then it will be considered missing
+    '''
+    missingFiles = []
+    for f in sourceDict:
+        if not f in destDict:
+            missingFiles.append(sourceDict[f])
+        else:
+            head,tail = path.split(rootFolder)
+            h,t = path.split(sourceDict[f])
+            head = str.split(head).pop()
+            h = str.split(h).pop()
+            if head != h:
+                missingFiles.append(sourceDict[f])
+
+    return missingFiles
+
 def extFilter(src,names):
     return names
 
@@ -173,51 +200,78 @@ def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none
                 x = input("are you sure?").lower()
                 if x == "y":
                     break
-                
-    #create a archive file or a folder containing a copy of verything in the source
-    print(name)
-    #use the copytree as default
-    if copyVer=='default':      
-        print('default:\n')
-        try :
-            shutil.copytree(src=source,dst=os.path.join(dest,name))
-        except FileExistsError:
-            print("Backup name already exists\n")
-            backup(source,dest)
-    #nocopy command
-    elif copyVer == 'nocopy':   
-        print('nocopy:\n')
-        filePrint = lambda path,file: print(os.path.join(path,file))
-        for (p,f) in missingFilesList(source,dest):
-            filePrint(p,f)
-    #backup protocol
-    elif copyVer == 'backup':   
-        try :
-            shutil.copytree(src=source,dst=os.path.join(dest,name))
-        except FileExistsError:
-            print("Backup name already exists\n")
-            backup(source,dest)
-    #archive by creating a zip
-    elif copyVer == 'archive':  
-        try :
-            chdir(dest)
-            #shutil.ignore_patterns()
-            print(shutil.make_archive(base_name=name,root_dir=dest,base_dir=source,format='zip'))
-            input("Press any key...")
-        except FileExistsError:
-            print("archive name already exists\n")
-            backup(source,dest)
-    #robocopy
-    elif copyVer == 'robo':
-        copyToMissingRobo(missingFilesList(source,dest),dest)
-    return True
+
+
+    #check for a hashCheck value and if none then 
+    if not hashCheck:
+        #use the copytree as default
+        if copyVer=='default':      
+            print('default:\n')
+            try :
+                shutil.copytree(src=source,dst=os.path.join(dest,name))
+            except FileExistsError:
+                print("Backup name already exists\n")
+                backup(source,dest)
+        #nocopy command
+        elif copyVer == 'nocopy':
+            print('nocopy:\n')
+            filePrint = lambda path,file: print(os.path.join(path,file))
+            for (p,f) in missingFilesList(source,dest):
+                filePrint(p,f)
+        #backup protocol
+        elif copyVer == 'backup':   
+            try :
+                shutil.copytree(src=source,dst=os.path.join(dest,name))
+            except FileExistsError:
+                print("Backup name already exists\n")
+                backup(source,dest)
+        #archive by creating a zip
+        elif copyVer == 'archive':  
+            try :
+                chdir(dest)
+                #shutil.ignore_patterns()
+                print(shutil.make_archive(base_name=name,root_dir=dest,base_dir=source,format='zip'))
+                input("Press any key...")
+            except FileExistsError:
+                print("archive name already exists\n")
+                backup(source,dest)
+        #robocopy
+        elif copyVer == 'robo':
+            copyToMissingRobo(missingFilesList(source,dest),dest)
+        return True
+    else:
+        #use the copytree as default but get a list of files using that hash filter then copy those files to the destination
+        if copyVer=='default':      
+            print('default:\n')
+            
  
+def getMissingFilesByHash(source,dest,hashType):
+    sourceFiles = os.listdir(source)
+    destFiles = os.listdir(dest)
+
+def getFileHashDict(foldername):
+    return os.listdir(foldername)
+
 def fileList(folderName):
     files = []
     for(dirpath, dirname, filenames) in walk(folderName) :
         for f in filenames:
             files.append((dirpath,f))
     return files
+
+def getCopyType():
+    opt = [(1,"Robo",None),
+            (2,"Archive",None),
+            (3,"Replace",None)]
+    choice = menu1(opt)
+    if choice == 1:
+        return 'robo'
+    if choice == 2:
+        return 'archive'
+    if choice == 3:
+        return 'replace'
+
+    return False
 
 def md5_wrapper():
     return print(md5(fileChooser("Enter a file: ")))
@@ -226,13 +280,20 @@ def sha1_wrapper():
 def sha256_wrapper():
     return print(sha_256(fileChooser("Enter a file: ")))
 def backup_wrapper():
-    return backup(source,dest)
+    return backup(source,dest,getCopyType)
+def archive_wrapper():
+    return backup(source,dest,'archive')
+def timestamp_wrapper():
+    return timestamp(source)
+
 def menu1(options=None):
     if not options: #no options are given so assume the basic menu
         options = [(1,"MD5 hash of a file",md5_wrapper),
                    (2,"SHA1 hash of a file",sha1_wrapper),
                    (3,"SHA256 hash of a file",sha256_wrapper),
-                   (4,"backup to a folder and create new copies of the files in the destination folder",backup_wrapper)]
+                   (4,"backup to a folder and create new copies of the files in the destination folder",backup_wrapper),
+                   (5,"replace all files in a folder with those from a source",archive_wrapper),
+                   (6,"timestamp all of the files in a directory",timestamp_wrapper)]
     if options:
         print("# | Option")
         for num,desc, a in options:
@@ -243,9 +304,11 @@ def menu1(options=None):
                 return False
             if int(choice) <= len(options) and int(choice) >0:
                 for num,desc,fun in options:
-                    if num == int(choice):
+                    if num == int(choice) and fun:
                         fun()
                         return True
+                    elif num == int(choice) and not fun:
+                        return int(choice)
 
 def menu():#change to menu(options) and pass in the options as a tuple number,desc,function_to_be_called and restructure the menu to show the options take input and run the function for the option
     '''The menu that is shown for the fileChecker program
@@ -291,6 +354,7 @@ def menu():#change to menu(options) and pass in the options as a tuple number,de
         if choice == "6" : #timestamp the destination folder
             timeStamp(dest)
             return True
+        
         #must not be a real option so grab input again
         choice = input("Enter a number please: ")
         
