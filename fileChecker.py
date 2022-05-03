@@ -152,6 +152,33 @@ def sha_256(filename) :
     time.sleep(5.0)
     return sha256.hexdigest()
 
+def getFileHashDict(foldername):
+    listOfFiles = {}
+    #chdir(foldername)
+    for dirpath,filename in fileList(foldername):
+        fpath = path.join(dirpath,filename)
+        listOfFiles[sha_1(fpath)] = fpath
+        
+    return listOfFiles
+
+def checkMissingIntact(sourceDict, destDict, rootFolder ):
+    '''Takes a dictionary of hash:path\\filename and returns a list of files missing from the hash list and the file structure.
+    if the hash matches but the file is in a different structure in the destination than in the source then it will be considered missing
+    '''
+    missingFiles = []
+    for f in sourceDict:
+        if not f in destDict:
+            missingFiles.append(sourceDict[f])
+        else:
+            head,tail = path.split(rootFolder)
+            h,t = path.split(sourceDict[f])
+            head = str.split(head).pop()
+            h = str.split(h).pop()
+            if head != h:
+                missingFiles.append(sourceDict[f])
+
+    return missingFiles
+
 def extFilter(src,names):
     return names
 
