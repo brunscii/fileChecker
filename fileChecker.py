@@ -136,8 +136,6 @@ def md5(filename) :
             if not data :
                 break
             md5.update(data)
-    print("MD5: {0}".format(md5.hexdigest()))
-    time.sleep(5.0)
     return md5.hexdigest()
 
 def sha_256(filename) :
@@ -148,8 +146,6 @@ def sha_256(filename) :
             if not data :
                 break
             sha256.update(data)
-    print("SHA256: {0}".format(sha256.hexdigest()))
-    time.sleep(5.0)
     return sha256.hexdigest()
 
 def getFileHashDict(foldername):
@@ -382,7 +378,7 @@ def main():
         else:
             source=fileChooser("Enter a source name: ")
     else:
-        menu()
+        menu1()
         return True
         
     if args.destination: #means we had a source that was valid or attempted and a destination that was entered
@@ -392,16 +388,35 @@ def main():
             dest=fileChooser("Enter a destination name: ")
     else: #no destination entered - Check for single file flags and if none then 
         if args.sha1:
-            if os.path.isdir(source):
+            if os.path.isdir(source):#given a folder show all of the hashes for the files in it
                 for dir,filename in fileList(source):
-                    fname = os.path.join(dir,filename).format("%-20s",)
+                    fname = os.path.join(dir,filename)
                     s1 = sha_1(os.path.join(dir,filename))
-                    print(f"{fname : <10} SHA1: {s1}")
+                    print(f"{fname:^8} SHA1: {s1}")
                 input("....")
-            else:
+            else: #give the hash of a single file
                 print(sha_1(source))
                 input("....")
-
+        if args.sha256:
+            if os.path.isdir(source):#given a folder show all of the hashes for the files in it
+                for dir,filename in fileList(source):
+                    fname = os.path.join(dir,filename)
+                    s1 = sha_256(os.path.join(dir,filename))
+                    print(f"{fname:^8} SHA256: {s1}")
+                input("....")
+            else: #give the hash of a single file
+                print(sha_256(source))
+                input("....")
+        if args.md5:
+            if os.path.isdir(source):#given a folder show all of the hashes for the files in it
+                for dir,filename in fileList(source):
+                    fname = os.path.join(dir,filename)
+                    s1 = md5(os.path.join(dir,filename))
+                    print(f"{fname:^8} MD5: {s1}")
+                input("....")
+            else: #give the hash of a single file
+                print(md5(source))
+                input("....")
     if args.b:
         print("Backup mode initialized:\n")
         backup(source,dest,copyVer='backup')
