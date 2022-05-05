@@ -13,7 +13,7 @@ ToDo:
 '''
 
 from os import chdir, walk
-import os
+from os import path
 from os.path import exists
 from pathlib import Path
 import shutil
@@ -208,20 +208,20 @@ def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none
         if copyVer=='default':      
             print('default:\n')
             try :
-                shutil.copytree(src=source,dst=os.path.join(dest,name))
+                shutil.copytree(src=source,dst=path.join(dest,name))
             except FileExistsError:
                 print("Backup name already exists\n")
                 backup(source,dest)
         #nocopy command
         elif copyVer == 'nocopy':
             print('nocopy:\n')
-            filePrint = lambda path,file: print(os.path.join(path,file))
+            filePrint = lambda path,file: print(path.join(path,file))
             for (p,f) in missingFilesList(source,dest):
                 filePrint(p,f)
         #backup protocol
         elif copyVer == 'backup':   
             try :
-                shutil.copytree(src=source,dst=os.path.join(dest,name))
+                shutil.copytree(src=source,dst=path.join(dest,name))
             except FileExistsError:
                 print("Backup name already exists\n")
                 backup(source,dest)
