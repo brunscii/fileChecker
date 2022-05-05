@@ -245,12 +245,14 @@ def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none
             print('default:\n')
             
  
-def getMissingFilesByHash(source,dest,hashType):
-    sourceFiles = os.listdir(source)
-    destFiles = os.listdir(dest)
-
-def getFileHashDict(foldername):
-    return os.listdir(foldername)
+def getMissingFilesByHash(sourceDict,destDict):
+    '''non strict check for missing files by hash'''
+    missingFiles = []
+    for f in destDict:
+        if not f in destDict:
+            missingFiles.append(sourceDict[f])
+    return missingFiles
+    
 
 def fileList(folderName):
     files = []
@@ -284,7 +286,7 @@ def backup_wrapper():
 def archive_wrapper():
     return backup(source,dest,'archive')
 def timestamp_wrapper():
-    return timestamp(source)
+    return timeStamp(source)
 
 def menu1(options=None):
     if not options: #no options are given so assume the basic menu
