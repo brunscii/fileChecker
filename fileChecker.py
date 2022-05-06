@@ -86,10 +86,10 @@ def missingFilesList(path1, path2):
    
     return missingFiles
 
-#This is a function to copy the missing files to the destination
+
 def copyToMissingRobo(files, dest):
+    '''This is a function to copy the missing files to the destination'''
     for (dir, fileName) in files:
-        #time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
         
 def getFolders(s,d):
