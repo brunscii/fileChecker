@@ -25,7 +25,7 @@ import hashlib
 import datetime
 
 
-parser = ArgumentParser(description='Fancy Copy and Paste')
+parser = ArgumentParser(description='Backup and Archival Tool')
 copyType = parser.add_mutually_exclusive_group()
 hashCheckType = parser.add_mutually_exclusive_group()
 
