@@ -13,7 +13,7 @@ ToDo:
 '''
 
 from os import chdir, walk
-import os
+from os import path
 from os.path import exists
 from pathlib import Path
 import shutil
@@ -86,14 +86,14 @@ def missingFilesList(path1, path2):
    
     return missingFiles
 
-#This is a function to copy the missing files to the destination
+
 def copyToMissingRobo(files, dest):
+    '''This is a function to copy the missing files to the destination'''
     for (dir, fileName) in files:
-        #time.sleep(2.5)
         call(["robocopy", dir, dest, fileName])
         
 def getFolders(s,d):
-    
+    '''grab the folders and check that they exist'''
     global source
     global dest
 
@@ -112,6 +112,7 @@ def getFolders(s,d):
         dest = fileChooser("Enter a destination: ")
 
 def fileChooser(msg='Enter a filename: '):
+    '''gets the name of a file and checks if it exists. If it does then it is returned'''
     while True :
         f = input(msg)
         if exists(f) :
@@ -119,6 +120,7 @@ def fileChooser(msg='Enter a filename: '):
                 return f
     
 def sha_1(filename) :
+    '''returns the hashcode in SHA1 for a file'''
     sha1 = hashlib.sha1()
     with open(filename,'rb') as f:
         while True:
@@ -129,6 +131,8 @@ def sha_1(filename) :
     return sha1.hexdigest()
 
 def md5(filename) :
+    '''returns the hashcode in MD5 for a file'''
+
     md5 = hashlib.md5()
     with open(filename,'rb') as f:
         while True:
@@ -139,6 +143,8 @@ def md5(filename) :
     return md5.hexdigest()
 
 def sha_256(filename) :
+    '''returns the hashcode in SHA256 for a file'''
+
     sha256 = hashlib.sha256()
     with open(filename,'rb') as f:
         while True:
@@ -149,6 +155,7 @@ def sha_256(filename) :
     return sha256.hexdigest()
 
 def getFileHashDict(foldername):
+    '''returs a hash dictionary of hashcode : filename'''
     listOfFiles = {}
     #chdir(foldername)
     for dirpath,filename in fileList(foldername):
@@ -175,11 +182,14 @@ def checkMissingIntact(sourceDict, destDict, rootFolder ):
 
     return missingFiles
 
-def extFilter(src,names):
-    return names
+def extFilter(src,inc):
+    '''returns a tuple of (path,file) from the src path that incudes the extension contained in inc'''
+    files = fileList(src)
+    #since the files list is a tuple (path,file) and splitext is (file,ext) then ([1])[1]
+    return filter(lambda f: path.splitext(f[1])[1] == inc,files)
 
 def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none',options=[]):
-    
+    '''performs a backup depending on the copying style, whether or not a hash check is performed'''
     global source
     global dest
     
@@ -204,20 +214,20 @@ def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none
         if copyVer=='default':      
             print('default:\n')
             try :
-                shutil.copytree(src=source,dst=os.path.join(dest,name))
+                shutil.copytree(src=source,dst=path.join(dest,name))
             except FileExistsError:
                 print("Backup name already exists\n")
                 backup(source,dest)
         #nocopy command
         elif copyVer == 'nocopy':
             print('nocopy:\n')
-            filePrint = lambda path,file: print(os.path.join(path,file))
+            filePrint = lambda path,file: print(path.join(path,file))
             for (p,f) in missingFilesList(source,dest):
                 filePrint(p,f)
         #backup protocol
         elif copyVer == 'backup':   
             try :
-                shutil.copytree(src=source,dst=os.path.join(dest,name))
+                shutil.copytree(src=source,dst=path.join(dest,name))
             except FileExistsError:
                 print("Backup name already exists\n")
                 backup(source,dest)
@@ -239,13 +249,17 @@ def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none
         #use the copytree as default but get a list of files using that hash filter then copy those files to the destination
         if copyVer=='default':      
             print('default:\n')
-            
  
-def getMissingFilesByHash(source,dest,hashType):
-    sourceFiles = os.listdir(source)
-    destFiles = os.listdir(dest)
-
+def getMissingFilesByHash(sourceDict,destDict):
+    '''non strict check for missing files by hash'''
+    missingFiles = []
+    for f in destDict:
+        if not f in destDict:
+            missingFiles.append(sourceDict[f])
+    return missingFiles
+    
 def fileList(folderName):
+    '''return a tuple of path,filename in a folder'''
     files = []
     for(dirpath, dirname, filenames) in walk(folderName) :
         for f in filenames:
@@ -253,6 +267,7 @@ def fileList(folderName):
     return files
 
 def getCopyType():
+    '''checks for the type of copy to perform in the menu options'''
     opt = [(1,"Robo",None),
             (2,"Archive",None),
             (3,"Replace",None)]
@@ -268,18 +283,24 @@ def getCopyType():
 
 def md5_wrapper():
     return print(md5(fileChooser("Enter a file: ")))
+
 def sha1_wrapper():
     return print(sha_1(fileChooser("Enter a file: ")))
+
 def sha256_wrapper():
     return print(sha_256(fileChooser("Enter a file: ")))
+
 def backup_wrapper():
     return backup(source,dest,getCopyType)
+
 def archive_wrapper():
     return backup(source,dest,'archive')
+
 def timestamp_wrapper():
-    return timestamp(source)
+    return timeStamp(source)
 
 def menu1(options=None):
+    '''passes the options that are passed into the function to be printed. If no options are given then the defaults are used'''
     if not options: #no options are given so assume the basic menu
         options = [(1,"MD5 hash of a file",md5_wrapper),
                    (2,"SHA1 hash of a file",sha1_wrapper),
@@ -302,61 +323,13 @@ def menu1(options=None):
                         return True
                     elif num == int(choice) and not fun:
                         return int(choice)
-
-def menu():#change to menu(options) and pass in the options as a tuple number,desc,function_to_be_called and restructure the menu to show the options take input and run the function for the option
-    '''The menu that is shown for the fileChecker program
-        # | Option
-        n | Description'''
-    print("# | Option \n" ,
-              "=====================\n" ,
-              "1.| MD5 hash of a file \n" ,
-              "2.| SHA1 hash of a file \n" ,
-              "3.| SHA256 hash of a file\n" ,
-              "4.| backup to a folder and create new copies of the files in the destination folder \n" ,
-              "5.| replace all files in a folder with those from a source\n" ,
-              "6.| timestamp all of the files in a directory\n")
-
-    choice = input("Enter a number: ")
-    #add a loop that repeats and asks for input if not given a number between 1-5 and 0 to exit
-    #filter the input for the menu
-
-    while True : #option catcher
-        if choice == "0" :
-            return False
-        if choice == "1" : #md5 option
-            print(md5(fileChooser()))
-            time.sleep(15)
-            return True
-        if choice == "2" : #sha1 option
-            print(sha_1(fileChooser()))
-            time.sleep(15)
-            return True
-        if choice == "3" : #sha256 option
-            print("Working on it")
-            time.sleep(5)
-            return True
-        if choice == "4" : #backup option
-            print("working on it --- new features warning")
-            backup(source,dest)
-            return True
-        if choice == "5" : #replace all option
-            print("This will replace all files in the destination.\nAre you sure this is what you want?")
-            backup(source,dest,copyVer='archive')
-                #add the call to replace all files here
-            return True
-        if choice == "6" : #timestamp the destination folder
-            timeStamp(dest)
-            return True
-        
-        #must not be a real option so grab input again
-        choice = input("Enter a number please: ")
-        
-#time stamps all of the files and folders in a directory
+                    
 def timeStamp(destination):
+    '''time stamps all of the files and folders in a directory'''
     if exists(destination):        
         for path,file in fileList(destination):
             Path(path).touch()
-            Path(os.path.join(path,file)).touch()
+            Path(path.join(path,file)).touch()
     else:
         timeStamp(fileChooser('Enter a destination: '))
     return True
@@ -383,10 +356,10 @@ def main():
             dest=fileChooser("Enter a destination name: ")
     else: #no destination entered - Check for single file flags and if none then 
         if args.sha1:
-            if os.path.isdir(source):#given a folder show all of the hashes for the files in it
+            if path.isdir(source):#given a folder show all of the hashes for the files in it
                 for dir,filename in fileList(source):
-                    fname = os.path.join(dir,filename)
-                    s1 = sha_1(os.path.join(dir,filename))
+                    fname = path.join(dir,filename)
+                    s1 = sha_1(path.join(dir,filename))
                     print(f"{fname:^8} SHA1: {s1}")
                 input("....")
             else: #give the hash of a single file
@@ -430,5 +403,6 @@ def main():
     return True
     #copyToMissing(missingFilesList(source, dest), dest)
     #add some form of flag checking to call appropriate flags
+
 if __name__ == "__main__":
     main()
