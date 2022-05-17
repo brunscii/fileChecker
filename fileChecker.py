@@ -1,13 +1,10 @@
 '''Author: Chris Carlin
 
 ToDo:
-
->fix the double menu with no source and destination - return true after
 >check if only source and no destination and check for appropriate flags (1,5,256,t,log)
 >add a logging feature
 >add a way to read the logs for a resume feature
->add a check in the menu for after the copy type is entered
->
+
     
 
 '''
@@ -366,20 +363,20 @@ def main():
                 print(sha_1(source))
                 input("....")
         if args.sha256:
-            if os.path.isdir(source):#given a folder show all of the hashes for the files in it
+            if path.isdir(source):#given a folder show all of the hashes for the files in it
                 for dir,filename in fileList(source):
-                    fname = os.path.join(dir,filename)
-                    s1 = sha_256(os.path.join(dir,filename))
+                    fname = path.join(dir,filename)
+                    s1 = sha_256(path.join(dir,filename))
                     print(f"{fname:^8} SHA256: {s1}")
                 input("....")
             else: #give the hash of a single file
                 print(sha_256(source))
                 input("....")
         if args.md5:
-            if os.path.isdir(source):#given a folder show all of the hashes for the files in it
+            if path.isdir(source):#given a folder show all of the hashes for the files in it
                 for dir,filename in fileList(source):
-                    fname = os.path.join(dir,filename)
-                    s1 = md5(os.path.join(dir,filename))
+                    fname = path.join(dir,filename)
+                    s1 = md5(path.join(dir,filename))
                     print(f"{fname:^8} MD5: {s1}")
                 input("....")
             else: #give the hash of a single file
@@ -398,7 +395,7 @@ def main():
     if args.t :
         timeStamp(dest)
     if len(args.names) == 0: #no arguments passed to the program
-        menu()
+        menu1()
     
     return True
     #copyToMissing(missingFilesList(source, dest), dest)
