@@ -3,55 +3,20 @@ import os
 from os.path import exists
 from pathlib import Path
 import shutil
-from subprocess import call
-from argparse import ArgumentParser
 import sys
 import time
 import hashlib
 import datetime
+
 class BAT:
-    '''Author: Chris Carlin
 
-    ToDo:
+    def __init__(self, src = None, dst = None, hashType = None, copyType = None, name = None):
+        self.source = src
+        self.dest = dst
+        self.hashType = copyType
+        self.copyType = hashType
+        self.name = name
 
-    >fix the double menu with no source and destination - return true after
-    >check if only source and no destination and check for appropriate flags (1,5,256,t,log)
-    >add a logging feature
-    >add a way to read the logs for a resume feature
-    >add a check in the menu for after the copy type is entered
-    >
-        
-
-    '''
-
-
-    def __init__(self):
-        self.parser = ArgumentParser(description='Backup and Archival Tool')
-        self.copyType = self.parser.add_mutually_exclusive_group()
-        self.hashCheckType = self.parser.add_mutually_exclusive_group()
-
-        self.parser.add_argument('source',type=str,nargs='?',help='the source of the operation')
-        self.parser.add_argument('destination',type=str,nargs='?',help='the destination of the operation')
-        self.parser.add_argument('-t',"--t",action = "store_true",help = "timestamps all of the files in the destination to show they are up to date after the backup")
-        self.parser.add_argument('-ext',"--ext",type = str,action = "append",nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
-        self.parser.add_argument('-log',"--log",type=str,action = "append",nargs='+',help = "create a log file for the copies or a list of files missing in case of the nocopy command")
-         
-        self.copyType.add_argument('-cp',"--cp",action = "store_true",help = "copy the file using the command lines cp command")
-        self.copyType.add_argument('-r','--r',action = "store_true",help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
-        self.copyType.add_argument('-b',"--b",action = "store_true",help = "backup by creating a folder with a copy of the source in the new source folder")
-        self.copyType.add_argument('-robo',"--robo",action = "store_true",help = "copy the file using the command lines robo command")
-        self.copyType.add_argument('-n',"--nocopy",action = "store_true",help = "just make a list of missing files")
-        self.copyType.add_argument('-a', '--a',action='store_true',help='creates a zip file of the source folder')
-
-        self.hashCheckType.add_argument('-1',"--sha1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
-        self.hashCheckType.add_argument('-5',"--md5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
-        self.hashCheckType.add_argument('-256',"--sha256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
-
-        self.source='asdf'
-        self.dest = 'asdf'
-
-    #checks path1 against path2 for missing files in path2 that exist in path1
-    #returns missing files in format of (dir,file)
     def missingFilesList(self,path1, path2):
         '''returns a tuple of dir,file that represent the path of the missing files'''
         missingFiles = []
@@ -87,14 +52,14 @@ class BAT:
        
         return missingFiles
 
-    #This is a function to copy the missing files to the destination
     def copyToMissingRobo(self,files, dest):
+        '''This is a function to copy the missing files to the destination'''
         for (dir, fileName) in files:
             #time.sleep(2.5)
             call(["robocopy", dir, dest, fileName])
             
     def getFolders(self,s,d):
-        
+        '''grab the folders and check that they exist'''
         #check the source and destination folders for validity and choose new targets in case of issue
         if exists(s):
             print("Source: " + s)
@@ -110,6 +75,7 @@ class BAT:
             self.dest = self.fileChooser("Enter a destination: ")
 
     def fileChooser(self,msg='Enter a filename: '):
+        '''gets the name of a file and checks if it exists. If it does then it is returned'''
         while True :
             f = input(msg)
             if exists(f) :
@@ -117,6 +83,7 @@ class BAT:
                     return f
         
     def sha_1(self,filename) :
+        '''returns the hashcode in SHA1 for a file'''
         sha1 = hashlib.sha1()
         with open(filename,'rb') as f:
             while True:
@@ -127,6 +94,7 @@ class BAT:
         return sha1.hexdigest()
 
     def md5(self,filename) :
+        '''returns the hashcode in MD5 for a file'''
         md5 = hashlib.md5()
         with open(filename,'rb') as f:
             while True:
@@ -137,6 +105,7 @@ class BAT:
         return md5.hexdigest()
 
     def sha_256(self,filename) :
+        '''returns the hashcode in SHA256 for a file'''
         sha256 = hashlib.sha256()
         with open(filename,'rb') as f:
             while True:
@@ -147,6 +116,7 @@ class BAT:
         return sha256.hexdigest()
 
     def getFileHashDict(self,foldername):
+        '''returs a hash dictionary of hashcode : filename'''
         listOfFiles = {}
         #chdir(foldername)
         for dirpath,filename in self.fileList(foldername):
@@ -174,10 +144,13 @@ class BAT:
         return missingFiles
 
     def extFilter(self,src,names):
-        return names
+        '''returns a tuple of (path,file) from the src path that incudes the extension contained in inc'''
+        files = fileList(src)
+        #since the files list is a tuple (path,file) and splitext is (file,ext) then ([1])[1]
+        return filter(lambda f: path.splitext(f[1])[1] == inc,files)
 
     def backup(self,s = "", destination = "", name='',copyVer='default',hashCheck=None,options=[]):
-        
+        '''performs a backup depending on the copying style, whether or not a hash check is performed'''
         #Error checking to make sure the source/dest exists
         self.getFolders(s,destination)
         
@@ -194,7 +167,7 @@ class BAT:
 
         #check for a hashCheck value and if none then 
         if not hashCheck:
-            print("kjhgkjhgkjhgkjgh")
+            print("No Hash Checking Enabled:::::::")
             #use the copytree as default
             if copyVer=='default':
                 print('default:\n')
@@ -236,12 +209,13 @@ class BAT:
             if copyVer=='default':      
                 print('default:\n')
                 
-     
     def getMissingFilesByHash(self,source,dest,hashType):
+        '''non strict check for missing files by hash'''
         sourceFiles = os.listdir(source)
         destFiles = os.listdir(dest)
 
     def fileList(self,folderName):
+        '''return a tuple of path,filename in a folder'''
         files = []
         for(dirpath, dirname, filenames) in walk(folderName) :
             for f in filenames:
@@ -249,6 +223,7 @@ class BAT:
         return files
 
     def getCopyType(self):
+        '''checks for the type of copy to perform in the menu options'''
         opt = [(1,"Robo",None),
                 (2,"Archive",None),
                 (3,"Replace",None),
@@ -277,6 +252,8 @@ class BAT:
         return self.timestamp(self.source)
 
     def menu1(self,options=None):
+        '''passes the options that are passed into the function to be printed. If no options are given then the defaults are used'''
+
         if not options: #no options are given so assume the basic menu
             options = [(1,"MD5 hash of a file",self.md5_wrapper),
                        (2,"SHA1 hash of a file",self.sha1_wrapper),
@@ -302,6 +279,7 @@ class BAT:
             
     #time stamps all of the files and folders in a directory
     def timeStamp(self,destination):
+        '''time stamps all of the files and folders in a directory'''
         if exists(destination):        
             for path,file in fileList(destination):
                 Path(path).touch()
@@ -311,72 +289,9 @@ class BAT:
         return True
 
     def main(self):
-        
-        
-        args = self.parser.parse_args()
-        if args.source:
-            if exists(args.source):
-                self.source = args.source
-            else:
-                self.source=fileChooser("Enter a source name: ")
-        else:
-            self.menu1()
-            return True
-            
-        if args.destination: #means we had a source that was valid or attempted and a destination that was entered
-            if exists(args.destination):
-                self.dest = args.destination
-            else:      
-                self.dest=fileChooser("Enter a destination name: ")
-        else: #no destination entered - Check for single file flags and if none then 
-            if args.sha1:
-                if os.path.isdir(source):#given a folder show all of the hashes for the files in it
-                    for dir,filename in fileList(source):
-                        fname = os.path.join(dir,filename)
-                        s1 = sha_1(os.path.join(dir,filename))
-                        print(f"{fname:^8} SHA1: {s1}")
-                    input("....")
-                else: #give the hash of a single file
-                    print(sha_1(source))
-                    input("....")
-            if args.sha256:
-                if os.path.isdir(source):#given a folder show all of the hashes for the files in it
-                    for dir,filename in fileList(source):
-                        fname = os.path.join(dir,filename)
-                        s1 = sha_256(os.path.join(dir,filename))
-                        print(f"{fname:^8} SHA256: {s1}")
-                    input("....")
-                else: #give the hash of a single file
-                    print(sha_256(self.source))
-                    input("....")
-            if args.md5:
-                if os.path.isdir(self.source):#given a folder show all of the hashes for the files in it
-                    for dir,filename in fileList(self.source):
-                        fname = os.path.join(dir,filename)
-                        s1 = md5(os.path.join(dir,filename))
-                        print(f"{fname:^8} MD5: {s1}")
-                    input("....")
-                else: #give the hash of a single file
-                    print(md5(self.source))
-                    input("....")
-        if args.b:
-            print("Backup mode initialized:\n")
-            backup(self.source,self.dest,copyVer='backup')
-            #return True
-        if args.a:
-            print("Archive mode initialized:\n")
-            backup(self.source,self.dest,copyVer='archive')
-            #return True
-        if args.nocopy:
-            backup(self.source,self.dest,copyVer='nocopy',name='none')
-        if args.t :
-            timeStamp(self.dest)
-        if len(args.names) == 0: #no arguments passed to the program
-            menu()
-        
+        self.menu1()
         return True
-        #copyToMissing(missingFilesList(source, self.dest), self.dest)
-        #add some form of flag checking to call appropriate flags
+        
 if __name__ == "__main__":
-    b = BAT()
+    b = BAT('C:\\Users\\meatw\\Desktop\\school\\PONG','C:\\Users\\meatw\\Desktop\\missingFiles')
     b.main()
