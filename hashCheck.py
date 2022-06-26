@@ -1,4 +1,4 @@
-from genericpath import isdir
+from genericpath import exists, isdir
 from os import listdir 
 import hashlib
 from typing import Dict, List
@@ -15,6 +15,14 @@ def sha_1(filename) :
                 break
             sha1.update(data)
     return sha1.hexdigest()
+
+def fileChooser(msg='Enter a filename: '):
+    '''gets the name of a file and checks if it exists. If it does then it is returned'''
+    while True :
+        f = input(msg)
+        if exists(f) :
+            if(input("Are you sure y/n: ").lower() == "y"):
+                return f
 
 def fileList(folderName):
     files = []
@@ -52,14 +60,17 @@ def checkMissingIntact(sourceDict, destDict, rootFolder ):
     return missingFiles
 
 def test():
-    dfiles = getFileHashDict("C:\\Users\\meatw\\Desktop\\missingFiles")
-    sfiles = getFileHashDict("C:\\Users\\meatw\\Desktop\\school\\PONG")
+
+
+    source = fileChooser()
+    dfiles = getFileHashDict(source)
+    sfiles = getFileHashDict(fileChooser())
 
     #this ignores the folder structure and checks for files in the destination that can be in different folders
     '''for f in sfiles:
         if not f in dfiles:
             print(sfiles[f])'''
-    for f in checkMissingIntact(sfiles,dfiles,"C:\\Users\\meatw\\Desktop\\school\\PONG"):
+    for f in checkMissingIntact(sfiles,dfiles,source):
         print(f)
 
 
