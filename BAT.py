@@ -1,6 +1,5 @@
 from os import chdir, walk
-import os
-from os.path import exists
+from os.path import exists, join
 from pathlib import Path
 import shutil
 import sys
@@ -273,6 +272,7 @@ class BAT:
                     for num,desc,fun in options:
                         if num == int(choice) and fun:
                             fun()
+
                             return True
                         elif num == int(choice) and not fun:
                             return int(choice)
@@ -294,4 +294,9 @@ class BAT:
         
 if __name__ == "__main__":
     b = BAT('C:\\Users\\meatw\\Desktop\\school\\PONG','C:\\Users\\meatw\\Desktop\\missingFiles')
+    fList = b.missingFilesList(b.source,b.dest)
+    for d,f in fList:
+        print(join(d,f))
+
+    
     b.main()
