@@ -114,13 +114,13 @@ class BAT:
                 sha256.update(data)
         return sha256.hexdigest()
 
-    def getFileHashDict(self,foldername):
+    def getFileHashDict(self,foldername, hashFunc):
         '''returs a hash dictionary of hashcode : filename'''
         listOfFiles = {}
         #chdir(foldername)
         for dirpath,filename in self.fileList(foldername):
             fpath = path.join(dirpath,filename)
-            listOfFiles[sha_1(fpath)] = fpath
+            listOfFiles[hashFunc(fpath)] = fpath
             
         return listOfFiles
 

@@ -46,11 +46,11 @@ hashCheckType.add_argument('-256',"--sha256",action = "store_true",help = "uses 
 source='asdf'
 dest = "asdf"
 
-#checks path1 against path2 for missing files in path2 that exist in path1
-#returns missing files in format of (dir,file)
+
+
 def missingFilesList(path1, path2):
-    '''returns a tuple of dir,file that represent the path of the missing files'''
-    missingFiles = []
+    '''returns a tuple of dir,file that represent the path of the missing files
+    returns missing files in format of (dir,file)missingFiles = []'''
     if not exists(path1):
         path1 = fileChooser("Enter a source: ")
         global source
