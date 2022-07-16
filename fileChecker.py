@@ -302,9 +302,9 @@ def menu1(options=None):
         options = [(1,"MD5 hash of a file",md5_wrapper),
                    (2,"SHA1 hash of a file",sha1_wrapper),
                    (3,"SHA256 hash of a file",sha256_wrapper),
-                   (4,"backup to a folder and create new copies of the files in the destination folder",backup_wrapper),
+                   (4,"backup to a folder and create new copies",backup_wrapper),
                    (5,"replace all files in a folder with those from a source",archive_wrapper),
-                   (6,"timestamp all of the files in a directory",timestamp_wrapper)]
+                   (6,"timestamp all of the files",timestamp_wrapper)]
     if options:
         print("# | Option")
         for num,desc, a in options:
@@ -324,9 +324,9 @@ def menu1(options=None):
 def timeStamp(destination):
     '''time stamps all of the files and folders in a directory'''
     if exists(destination):        
-        for path,file in fileList(destination):
-            Path(path).touch()
-            Path(path.join(path,file)).touch()
+        for p,file in fileList(destination):
+            #Path(path).touch()
+            Path(path.join(p,file)).touch()
     else:
         timeStamp(fileChooser('Enter a destination: '))
     return True
