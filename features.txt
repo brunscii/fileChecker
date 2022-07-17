@@ -7,7 +7,6 @@ This is the list of what we need to add to the file checker to make it useful fo
 	-Checking the hash value of a file quickly with either sha1 or sha256 to make sure it doesn't already exist 
 	-Tack option to only list the files that are missing from the destination directory 
 	-Option to write the list to a file
-	-Option to read a list from a file to be copied
 	-Option to read log and start over on last file being copied in case of failure
 	-Option to do a quiet backup
 	-Option to copy the files over in the same folder structure that it has in the source folder
