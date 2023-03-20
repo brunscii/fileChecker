@@ -26,22 +26,22 @@ parser = ArgumentParser(description='Backup and Archival Tool')
 copyType = parser.add_mutually_exclusive_group()
 hashCheckType = parser.add_mutually_exclusive_group()
 
-parser.add_argument('source',type=str,nargs='?',help='the source of the operation')
-parser.add_argument('destination',type=str,nargs='?',help='the destination of the operation')
-parser.add_argument('-t',"--t",action = "store_true",help = "timestamps all of the files in the destination to show they are up to date after the backup")
-parser.add_argument('-ext',"--ext",type = str,action = "append",nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
-parser.add_argument('-log',"--log",type=str,action = "append",nargs='+',help = "create a log file for the copies or a list of files missing in case of the nocopy command")
+parser.add_argument('source',                   type = str, nargs='?',  help='the source of the operation')
+parser.add_argument('destination',              type = str, nargs='?',  help='the destination of the operation')
+parser.add_argument('-t',   "--t",              action = "store_true",  help = "timestamps all of the files in the destination to show they are up to date after the backup")
+parser.add_argument('-ext', "--ext",            type = str, action = "append",  nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
+parser.add_argument('-log', "--log",            type =str,  action = "append",  nargs='+',  help = "create a log file for the copies or a list of files missing in case of the nocopy command")
  
-copyType.add_argument('-cp',"--cp",action = "store_true",help = "copy the file using the command lines cp command")
-copyType.add_argument('-r','--r',action = "store_true",help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
-copyType.add_argument('-b',"--b",action = "store_true",help = "backup by creating a folder with a copy of the source in the new source folder")
-copyType.add_argument('-robo',"--robo",action = "store_true",help = "copy the file using the command lines robo command")
-copyType.add_argument('-n',"--nocopy",action = "store_true",help = "just make a list of missing files")
-copyType.add_argument('-a', '--a',action='store_true',help='creates a zip file of the source folder')
+copyType.add_argument('-cp',    "--cp",         action = "store_true",  help = "copy the file using the command lines cp command")
+copyType.add_argument('-r',     '--r',          action = "store_true",  help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
+copyType.add_argument('-b',     "--b",          action = "store_true",  help = "backup by creating a folder with a copy of the source in the new source folder")
+copyType.add_argument('-robo',  "--robo",       action = "store_true",  help = "copy the file using the command lines robo command")
+copyType.add_argument('-n',     "--nocopy",     action = "store_true",  help = "just make a list of missing files")
+copyType.add_argument('-a',     '--a',          action = 'store_true',  help = 'creates a zip file of the source folder')
 
-hashCheckType.add_argument('-1',"--sha1",action = "store_true",help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
-hashCheckType.add_argument('-5',"--md5",action = "store_true",help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
-hashCheckType.add_argument('-256',"--sha256",action = "store_true",help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-1',"--sha1",       action = "store_true",  help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-5',"--md5",        action = "store_true",  help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
+hashCheckType.add_argument('-256',"--sha256",   action = "store_true",  help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
 
 source='asdf'
 dest = "asdf"
@@ -51,6 +51,7 @@ dest = "asdf"
 def missingFilesList(path1, path2):
     '''returns a tuple of dir,file that represent the path of the missing files
     returns missing files in format of (dir,file)missingFiles = []'''
+    
     if not exists(path1):
         path1 = fileChooser("Enter a source: ")
         global source
@@ -86,11 +87,13 @@ def missingFilesList(path1, path2):
 
 def copyToMissingRobo(files, dest):
     '''This is a function to copy the missing files to the destination'''
+    
     for (dir, fileName) in files:
         call(["robocopy", dir, dest, fileName])
         
 def getFolders(s,d):
     '''grab the folders and check that they exist'''
+    
     global source
     global dest
 
@@ -110,6 +113,7 @@ def getFolders(s,d):
 
 def fileChooser(msg='Enter a filename: '):
     '''gets the name of a file and checks if it exists. If it does then it is returned'''
+    
     while True :
         f = input(msg)
         if exists(f) :
@@ -118,6 +122,7 @@ def fileChooser(msg='Enter a filename: '):
     
 def sha_1(filename) :
     '''returns the hashcode in SHA1 for a file'''
+    
     sha1 = hashlib.sha1()
     with open(filename,'rb') as f:
         while True:
@@ -153,6 +158,7 @@ def sha_256(filename) :
 
 def getFileHashDict(foldername):
     '''returs a hash dictionary of hashcode : filename'''
+    
     listOfFiles = {}
     #chdir(foldername)
     for dirpath,filename in fileList(foldername):
@@ -165,6 +171,7 @@ def checkMissingIntact(sourceDict, destDict, rootFolder ):
     '''Takes a dictionary of hash:path\\filename and returns a list of files missing from the hash list and the file structure.
     if the hash matches but the file is in a different structure in the destination than in the source then it will be considered missing
     '''
+    
     missingFiles = []
     for f in sourceDict:
         if not f in destDict:
@@ -181,12 +188,14 @@ def checkMissingIntact(sourceDict, destDict, rootFolder ):
 
 def extFilter(src,inc):
     '''returns a tuple of (path,file) from the src path that incudes the extension contained in inc'''
+    
     files = fileList(src)
     #since the files list is a tuple (path,file) and splitext is (file,ext) then ([1])[1]
     return filter(lambda f: path.splitext(f[1])[1] == inc,files)
 
 def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none',options=[]):
     '''performs a backup depending on the copying style, whether or not a hash check is performed'''
+    
     global source
     global dest
     
@@ -249,6 +258,7 @@ def backup(s = "", destination = "", name = "",copyVer='default',hashCheck='none
  
 def getMissingFilesByHash(sourceDict,destDict):
     '''non strict check for missing files by hash'''
+    
     missingFiles = []
     for f in destDict:
         if not f in destDict:
@@ -257,6 +267,7 @@ def getMissingFilesByHash(sourceDict,destDict):
     
 def fileList(folderName):
     '''return a tuple of path,filename in a folder'''
+    
     files = []
     for(dirpath, dirname, filenames) in walk(folderName) :
         for f in filenames:
@@ -265,6 +276,7 @@ def fileList(folderName):
 
 def getCopyType():
     '''checks for the type of copy to perform in the menu options'''
+    
     opt = [(1,"Robo",None),
             (2,"Archive",None),
             (3,"Replace",None)]
@@ -298,6 +310,7 @@ def timestamp_wrapper():
 
 def menu1(options=None):
     '''passes the options that are passed into the function to be printed. If no options are given then the defaults are used'''
+    
     if not options: #no options are given so assume the basic menu
         options = [(1,"MD5 hash of a file",md5_wrapper),
                    (2,"SHA1 hash of a file",sha1_wrapper),
@@ -323,6 +336,7 @@ def menu1(options=None):
                     
 def timeStamp(destination):
     '''time stamps all of the files and folders in a directory'''
+    
     if exists(destination):        
         for p,file in fileList(destination):
             #Path(path).touch()
