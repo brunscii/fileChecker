@@ -6,9 +6,11 @@ import sys
 import time
 import hashlib
 import datetime
+import argCheck
+
 
 class BAT:
-
+    
     def __init__(self, src = None, dst = None, hashType = None, copyType = None, name = None):
         self.source = src
         self.dest = dst

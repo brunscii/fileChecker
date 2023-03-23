@@ -5,8 +5,6 @@ ToDo:
 >add a logging feature
 >add a way to read the logs for a resume feature
 
-    
-
 '''
 
 from os import chdir, walk
@@ -16,8 +14,6 @@ from pathlib import Path
 import shutil
 from subprocess import call
 from argparse import ArgumentParser
-import sys
-import time
 import hashlib
 import datetime
 
@@ -26,22 +22,22 @@ parser = ArgumentParser(description='Backup and Archival Tool')
 copyType = parser.add_mutually_exclusive_group()
 hashCheckType = parser.add_mutually_exclusive_group()
 
-parser.add_argument('source',                   type = str, nargs='?',  help='the source of the operation')
-parser.add_argument('destination',              type = str, nargs='?',  help='the destination of the operation')
-parser.add_argument('-t',   "--t",              action = "store_true",  help = "timestamps all of the files in the destination to show they are up to date after the backup")
+parser.add_argument('source',                   type = str, nargs='?',                      help='the source of the operation')
+parser.add_argument('destination',              type = str, nargs='?',                      help='the destination of the operation')
+parser.add_argument('-t',   "--t",              action = "store_true",                      help = "timestamps all of the files in the destination to show they are up to date after the backup")
 parser.add_argument('-ext', "--ext",            type = str, action = "append",  nargs = '+',help = "filters an extention type(s) to be copied from the source to the destination")
 parser.add_argument('-log', "--log",            type =str,  action = "append",  nargs='+',  help = "create a log file for the copies or a list of files missing in case of the nocopy command")
  
-copyType.add_argument('-cp',    "--cp",         action = "store_true",  help = "copy the file using the command lines cp command")
-copyType.add_argument('-r',     '--r',          action = "store_true",  help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
-copyType.add_argument('-b',     "--b",          action = "store_true",  help = "backup by creating a folder with a copy of the source in the new source folder")
-copyType.add_argument('-robo',  "--robo",       action = "store_true",  help = "copy the file using the command lines robo command")
-copyType.add_argument('-n',     "--nocopy",     action = "store_true",  help = "just make a list of missing files")
-copyType.add_argument('-a',     '--a',          action = 'store_true',  help = 'creates a zip file of the source folder')
+copyType.add_argument('-cp',    "--cp",         action = "store_true",                      help = "copy the file using the command lines cp command")
+copyType.add_argument('-r',     '--r',          action = "store_true",                      help = "replace the files that are in the destination folder with the version from the source. !!!Warning the files will be overwritten!!!")
+copyType.add_argument('-b',     "--b",          action = "store_true",                      help = "backup by creating a folder with a copy of the source in the new source folder")
+copyType.add_argument('-robo',  "--robo",       action = "store_true",                      help = "copy the file using the command lines robo command")
+copyType.add_argument('-n',     "--nocopy",     action = "store_true",                      help = "just make a list of missing files")
+copyType.add_argument('-a',     '--a',          action = 'store_true',                      help = 'creates a zip file of the source folder')
 
-hashCheckType.add_argument('-1',"--sha1",       action = "store_true",  help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
-hashCheckType.add_argument('-5',"--md5",        action = "store_true",  help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
-hashCheckType.add_argument('-256',"--sha256",   action = "store_true",  help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-1',"--sha1",       action = "store_true",                      help = "uses SHA1 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
+hashCheckType.add_argument('-5',"--md5",        action = "store_true",                      help = "uses a MD5 hash to ensure that the files in the destination match those of the source and copies over any missing files")
+hashCheckType.add_argument('-256',"--sha256",   action = "store_true",                      help = "uses SHA256 hashes to ensure the files in the destination are the same as the source to ensure there are no missing files")
 
 source='asdf'
 dest = "asdf"
@@ -376,6 +372,7 @@ def main():
             else: #give the hash of a single file
                 print(sha_1(source))
                 input("....")
+
         if args.sha256:
             if path.isdir(source):#given a folder show all of the hashes for the files in it
                 for dir,filename in fileList(source):
@@ -386,6 +383,7 @@ def main():
             else: #give the hash of a single file
                 print(sha_256(source))
                 input("....")
+
         if args.md5:
             if path.isdir(source):#given a folder show all of the hashes for the files in it
                 for dir,filename in fileList(source):
