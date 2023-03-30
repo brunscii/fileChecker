@@ -241,19 +241,26 @@ class BAT:
 
     def md5_wrapper(self):
         return self.print(self.md5(self.fileChooser("Enter a file: ")))
+
     def sha1_wrapper(self):
         return self.print(self.sha_1(self.fileChooser("Enter a file: ")))
+
     def sha256_wrapper(self):
         return self.print(self.sha_256(self.fileChooser("Enter a file: ")))
+
     def backup_wrapper(self):
         return self.backup(self.source,self.dest,copyVer=self.getCopyType())
+
     def archive_wrapper(self):
         return self.backup(self.source,self.dest,'archive')
+
     def timestamp_wrapper(self):
         return self.timestamp(self.source)
 
     def menu1(self,options=None):
-        '''passes the options that are passed into the function to be printed. If no options are given then the defaults are used'''
+        '''passes the options that are passed into the function to be printed. 
+            If no options are given then the defaults are used
+            0 is reserved for escape and returns false on the function'''
 
         if not options: #no options are given so assume the basic menu
             options = [(1,"MD5 hash of a file",self.md5_wrapper),
@@ -262,6 +269,7 @@ class BAT:
                        (4,"backup to a folder and create new copies of the files in the destination folder",self.backup_wrapper),
                        (5,"replace all files in a folder with those from a source",self.archive_wrapper),
                        (6,"timestamp all of the files in a directory",self.timestamp_wrapper)]
+
         if options:
             print("# | Option")
             for num,desc, a in options:
