@@ -1,10 +1,5 @@
-from genericpath import exists, isdir
-from os import listdir 
+from genericpath import exists
 import hashlib
-from typing import Dict, List
-from os import chdir
-from os import path
-from os import walk
 
 def sha_1(filename) :
     sha1 = hashlib.sha1()
