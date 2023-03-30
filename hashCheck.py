@@ -23,6 +23,7 @@ def fileChooser(msg='Enter a filename: '):
         if exists(f) :
             if(input("Are you sure y/n: ").lower() == "y"):
                 return f
+    throw : NameError
 
 def fileList(folderName):
     files = []
@@ -60,18 +61,19 @@ def checkMissingIntact(sourceDict, destDict, rootFolder ):
     return missingFiles
 
 def test():
-
-
+    '''This is the tester for this app'''
     source = fileChooser()
-    dfiles = getFileHashDict(source)
-    sfiles = getFileHashDict(fileChooser())
+
+    print ( 'SHA1: ', sha_1( source ) )
+    # dfiles = getFileHashDict(source) # requires a folder name not file name
+    # sfiles = getFileHashDict(fileChooser())
 
     #this ignores the folder structure and checks for files in the destination that can be in different folders
     '''for f in sfiles:
         if not f in dfiles:
             print(sfiles[f])'''
-    for f in checkMissingIntact(sfiles,dfiles,source):
-        print(f)
+    # for f in checkMissingIntact(sfiles,dfiles,source):
+    #     print(f)
 
 
     #do an actual folder by folder check of missing files preserving the file tree
