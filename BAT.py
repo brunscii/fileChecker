@@ -291,9 +291,9 @@ class BAT:
     def timeStamp(self,destination):
         '''time stamps all of the files and folders in a directory'''
         if exists(destination):        
-            for path,file in fileList(destination):
+            for path,file in self.fileList(destination):
                 Path(path).touch()
-                Path(os.path.join(path,file)).touch()
+                Path(path.join(path,file)).touch()
         else:
             timeStamp(fileChooser('Enter a destination: '))
         return True
