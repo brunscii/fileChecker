@@ -47,3 +47,5 @@ If the option to do a copy operation is selected it then asks if a hash check sh
 
 The goal of this program is to easily perform backups that are based on hashcodes that ensure integrity. This can be automated in order to create consistent backups.
 
+# TODO: 
+- add argCheck to BAT
