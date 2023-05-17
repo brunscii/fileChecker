@@ -31,14 +31,16 @@ The menu(options) function is used to print a list of options. The function take
 
 The program will display an option menu in the case that there is no input arguments. 
 
-><br>The option menu is something like this
-\# | Option
-<br>1 | MD5 hash of a file
-<br>2 | SHA1 hash of a file
-<br>3 | SHA256 hash of a file
-<br>4 | backup to a folder and create new copies of the files in the destination folder
-<br>5 | replace all files in a folder with those from a source
-<br>6 | timestamp all of the files in a directory
+The option menu is something like this 
+
+\#   | Option
+|--- | --- |
+1) | MD5 hash of a file
+2) | SHA1 hash of a file
+3) | SHA256 hash of a file
+4) | backup to a folder and create new copies of the files in the destination folder
+5) | replace all files in a folder with those from a source
+6) | timestamp all of the files in a directory
 
  
 If the option to do a copy operation is selected it then asks if a hash check should be performed for integrity and whether or not to create a logfile
