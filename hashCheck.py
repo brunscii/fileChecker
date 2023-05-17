@@ -57,9 +57,21 @@ def checkMissingIntact(sourceDict, destDict, rootFolder ):
 
 def test():
     '''This is the tester for this app'''
-    source = fileChooser()
+    source = fileChooser( "Enter a source file" )
+    srcHash = sha_1( source )
 
-    print ( 'SHA1: ', sha_1( source ) )
+    print ( 'SHA1: ', srcHash )
+
+    dest = fileChooser( "Enter the file to compare" )
+    dstHash = sha_1( dest )
+
+    print ( 'SHA1: ', dstHash )
+    
+    if( srcHash == dstHash ):
+        print( "The hashes MATCH")
+    else:
+        print( "No match" )
+
     # dfiles = getFileHashDict(source) # requires a folder name not file name
     # sfiles = getFileHashDict(fileChooser())
 
