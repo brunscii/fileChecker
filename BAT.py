@@ -97,12 +97,15 @@ class BAT:
     def md5(self,filename) :
         '''returns the hashcode in MD5 for a file'''
         md5 = hashlib.md5()
-        with open(filename,'rb') as f:
+        try:
+          with open(filename,'rb') as f:
             while True:
-                data = f.read(65536)
-                if not data :
-                    break
-                md5.update(data)
+              data = f.read(65536)
+              if not data :
+                  break
+              md5.update(data)
+        except Exception as e:
+            print(e)
         return md5.hexdigest()
 
     def sha_256(self,filename) :
